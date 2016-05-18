@@ -1,0 +1,32 @@
+{
+        "search_from": {
+                "__info": "0-left, 1-top, 2-right, 3-bottom",
+                "__def": 0
+        },
+        "fitline-roi-width": {
+	        "__info": "roi width",
+        	"__def": 0,
+        	"__min": 1,
+		"__max": 4000
+	},
+        "fitline-roi-height": {
+	        "__info": "roi height",
+        	"__def": 0,
+        	"__min": 1,
+		"__max": 3000
+	},
+        "fitline-roi-center-x": {
+	        "__info": "roi center x",
+                "__def": 100,
+        	"__min": 1
+	},
+        "fitline-roi-center-y": {
+	        "__info": "roi center y",
+                "__def": 100,
+        	"__min": 1
+        },
+        "fitline-weight": {
+	        "__info": "default CV_DIST_L1, see OpenCV::fitLine()",
+                "__def": 1
+	}
+ }

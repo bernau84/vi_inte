@@ -1,0 +1,43 @@
+{
+        "Format": {
+                "__info": "color/byte struct format",
+                "__def": "8bMONO",
+                "8b-mono": "8bMONO",
+                "32b-rgb": "32bRGB"
+                "auto": "AUTO"
+        },
+        "General": {
+            "__info": "maual - parameters are pushed to device/ manual - params are read out from device",
+            "__def": "AUTO",
+            "auto": "AUTO",
+            "manual": "MANUAL"
+        },
+	"Width": {
+	        "__info": "camera x-resolution",
+                "__def": 0,
+                "auto:" 0,
+        	"__min": 1,
+		"__max": 4000
+	},
+	"Height": {
+	        "__info": "camera y-resolution",
+                "__def": 0,
+                "auto:" 0,
+        	"__min": 1,
+		"__max": 3000
+	},
+	"Gain": {
+	        "__info": "analog gain on dB / automatic",
+                "__def": 0.0,
+                "__min": 1.0,
+                "__max": 1e+9.0,
+                "auto:" 0.0
+	},
+	"Exposition": {
+	        "__info": "exposure in us / automatic",
+                "__def": 0.0,
+                "__min": 1e-6,
+                "__max": 1e+6,
+                "auto:" 0,
+        }
+ }

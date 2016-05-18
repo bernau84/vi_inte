@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>js_config_cylinder_approx.txt</file>
+        <file>js_config_roi_colortransf.txt</file>
+        <file>js_config_threshold_cont.txt</file>
+        <file>js_config_sub_background.txt</file>
+        <file>js_config_fitline.txt</file>
+    </qresource>
+</RCC>

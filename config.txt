@@ -1,0 +1,110 @@
+{
+        "tcp-server-port": {
+                "__info": "tcp listener port",
+                "__def": 9100
+        },
+        "calibr-y": {
+                "__info": "calibration constant in horizontal axis [pix / mm]",
+                "__def": 1.0,
+                "__min": 0.001,
+                "__max": 1000
+        },
+        "calibr-x": {
+                "__info": "calibration constant in vertical axis [pix / mm]",
+                "__def": 1.0,
+                "__min": 0.001,
+                "__max": 1000
+        },
+        "focal-y": {
+                "__info": "vertical focal length in pix",
+                "__def": 1815,
+                "__min": 0.001,
+                "__max": 1000
+        },
+        "focal-x": {
+                "__info": "horizontal focal length in pix",
+                "__def": 1815,
+                "__min": 0.001,
+                "__max": 1000
+        },
+        "geometry-params": {
+                "__info": "projection scene dimension description in mm - distance roll-cam, roll bottom, roll average D, cam height, angle",
+                "__def": [1710, 1030, 10, 2300, 120, 0.0, 0.0, 0.0]
+        },
+        "roi-width": {
+                "__info": "roi width",
+                "__def": 0,
+                "__min": 1,
+                "__max": 4000
+        },
+        "roi-height": {
+                "__info": "roi height",
+                "__def": 0,
+                "__min": 1,
+                "__max": 3000
+        },
+        "roi-center-x": {
+                "__info": "roi center x",
+                "__def": 100,
+                "__min": 1
+        },
+        "roi-center-y": {
+                "__info": "roi center y",
+                "__def": 100,
+                "__min": 1
+        },
+        "color-transf": {
+            "__info": "color tranformation code (from open-cv types_c.h), CV_BGR2GRAY (6) by default",
+            "__def": 6
+        },
+        "threshold_positive": {
+                "__info": "threshold",
+                "__def": 65,
+                "__min": 1,
+                "__max": 255
+        },
+        "threshold_binaryval": {
+                "__info": "threshold binary value",
+                "__def": 255,
+                "__min": 1,
+                "__max": 255
+        },
+        "contour_minimal": {
+                "__info": "valid countour area",
+                "__def": 100,
+                "__min": 1
+        },
+        "pic-format": {
+            "__def": "8bMONO",
+            "__info": "snapshot conversion rules(8bMONO, 32bRGB)"
+        },
+        "background": {
+                "__info": "background bmp file path",
+                "__def": "back_avr.bmp"
+        },
+        "background-avr": {
+                "__info": "background moving averaging",
+                "__def": 1,
+                "__min": 1
+        },
+        "bck-ligher-threshold": {
+                "__info": "background pixel lighter than this is zeroed",
+                "__def": 32,
+                "__min": 1,
+                "__max": 255
+        },
+        "bck-darker-threshold": {
+                "__info": "background picture lighter than this is unchanged",
+                "__def": 16,
+                "__min": 1,
+                "__max": 255
+        },
+        "instrict": {
+                "__info": "9 instrict parameteres == camera matrix (center a and focal lenghts in pixels)",
+                "__def": [1813.264685, 0.000000, 672.370154, 0.000000, 1810.322816, 313.772407, 0.0, 0.0, 1.0]
+        },
+        "distorsion": {
+                "__info": "4 parameters, radial coretions k1, k2 and tangential corrections p1, p2",
+                "__def": [-0.286902, 0.095615, 0.002303, -0.000942]
+        }    
+ }

@@ -1,0 +1,27 @@
+{
+        "threshold_method": {
+                "__info": "threshold type (BINARY, INV, +ADAPTIVE, +OTZU)",
+                "__def": "BINARY"
+        },
+	"threshold_positive": {
+                "__info": "threshold ",
+                "__def": 95,
+        	"__min": 1,
+        	"__max": 255
+	},
+	"threshold_binaryval": {
+	        "__info": "threshold binary value",
+        	"__def": 255,
+        	"__min": 1,
+        	"__max": 255
+	},
+	"contour_minimal": {
+	        "__info": "valid countour area",
+        	"__def": 100,
+                "__min": 1
+        },
+        "contour_sel": {
+                "__info": "selection rule (BIGGEST, ALL)",
+                "__def": "BIGGEST"
+        }
+ }

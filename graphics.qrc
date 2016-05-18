@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>error-498-fix.gif</file>
+    </qresource>
+</RCC>

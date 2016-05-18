@@ -1,0 +1,28 @@
+{
+        "roi-width": {
+	        "__info": "roi width",
+        	"__def": 0,
+        	"__min": 1,
+		"__max": 4000
+	},
+        "roi-height": {
+	        "__info": "roi height",
+        	"__def": 0,
+        	"__min": 1,
+		"__max": 3000
+	},
+        "roi-center-x": {
+	        "__info": "roi center x",
+                "__def": 100,
+        	"__min": 1
+	},
+        "roi-center-y": {
+	        "__info": "roi center y",
+                "__def": 100,
+        	"__min": 1
+        },
+        "color-transf": {
+            "__info": "color transformation code (from open-cv types_c.h), CV_BGR2GRAY(6) by default",
+            "__def": 6
+        }
+ }
