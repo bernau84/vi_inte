@@ -42,6 +42,7 @@ private:
     QString path;
     QString log;
 
+    t_results props;
     t_collection par;
     bool abort;
     uint32_t error_mask;  //suma flagu e_vi_plc_pc_errors
@@ -109,6 +110,62 @@ private:
         return false;
     }
 
+protected:
+    void reply(unsigned ord){
+
+        switch(ord){
+
+            case VI_PLC_PC_TRIGGER_ACK: //meas
+                log += QString("-->tx: TRIGGER\r\n");
+            break;
+            case VI_PLC_PC_READY:
+                log += QString("-->tx: READY\r\n");
+            break;
+            case VI_PLC_PC_ERROR:
+                log += QString("-->tx: ERROR\r\n");
+            break;
+            case VI_PLC_PC_BACKGROUND_ACK:
+                log += QString("-->tx: BACKGROUND-ACK\r\n");
+            break;
+            case VI_PLC_PC_RESULT:
+                log += QString("-->tx: RESULT\r\n");
+            break;
+        }
+    }
+
+    void receive(unsigned ord, QByteArray raw){
+
+        switch(ord){
+
+            case VI_PLC_PC_TRIGGER: //meas
+                log += QString("<--rx: TRIGGER\r\n");
+            break;
+            case VI_PLC_PC_ABORT:
+                log += QString("<--rx: ABORT\r\n");
+            break;
+            case VI_PLC_PC_READY:
+                log += QString("<--rx: READY\r\n");
+            break;
+            case VI_PLC_PC_ERROR:
+                log += QString("<--rx: ERROR\r\n");
+            break;
+            case VI_PLC_PC_BACKGROUND:
+                log += QString("<--rx: BACKGROUND\r\n");
+            break;
+            case VI_PLC_PC_CALIBRATE:
+                log += QString("<--rx: CALIBRATE\r\n");
+            break;
+        }
+    }
+
+
+    void __init_measurement_res() = 0;
+
+    void __eval_measurement_res() = 0;
+
+    void __serialize_measurement_res(void *to, unsigned reserved) = 0;
+
+    void __deserialize_measurement_res(void *from, unsigned reserved) = 0;
 
 public slots:
 
@@ -130,135 +187,50 @@ public slots:
 
             case VI_PLC_PC_TRIGGER: //meas
             {
-                log += QString("<--rx: TRIGGER\r\n");
-
                 store.increment();
 
                 error_mask = VI_ERR_OK;
 
                 //potvrdime prijem
-                t_comm_binary_rollidn reply_st1 = {(uint16_t)VI_PLC_PC_TRIGGER_ACK, __to_rev_endian(error_mask), 0, 0};
-                QByteArray reply_by1((const char *)&reply_st1, sizeof(t_comm_binary_rollidn));
-                iface.on_write(reply_by1); //tx ack to plc
+                reply(VI_PLC_PC_TRIGGER_ACK); //tx ack to plc
 
-                int res = on_meas();
-
-
-                //odeslani vysledku
-                t_comm_binary_rollidn reply_st2 = {(uint16_t)VI_PLC_PC_RESULT,
-                                                   __to_rev_endian(error_mask),
-                                                   __to_rev_endian(s_len),
-                                                   __to_rev_endian(s_dia)};
-                QByteArray reply_by2((const char *)&reply_st2, sizeof(t_comm_binary_rollidn));
-                iface.on_write(reply_by2);  //tx results to plc
-
-                log += QString("-->tx: RESULT\r\n");
-                log += QString("-->tx: ord(%1),flags(0x%2),len(%3),dia(%4)\r\n")
-                        .arg(unsigned(reply_st2.ord))
-                        .arg(unsigned(reply_st2.flags), 2, 16, QChar('0'))
-                        .arg(mm_diameter)
-                        .arg(mm_length);
+                on_meas();
+                reply(VI_PLC_PC_RESULT);  //tx results to plc
             }
             break;
             case VI_PLC_PC_ABORT:
-                log += QString("<--rx: ABORT\r\n");
                 on_abort(); //nastavi preruseni a ceka na jeho vyhodnoceni
                 //a prekontrolujem jak na tom sme
             break;
             case VI_PLC_PC_READY:
             {
-                log += QString("<--rx: READY\r\n");
                 if(on_ready()){
                     //potvrdime prijem
-                    log += QString("-->tx: READY\r\n");
-                    t_comm_binary_rollidn reply_st = {(uint16_t)VI_PLC_PC_READY, 0/*error_mask*/, 0, 0};
-                    QByteArray reply_by((const char *)&reply_st, sizeof(t_comm_binary_rollidn));
-                    iface.on_write(reply_by);
+                    reply(VI_PLC_PC_READY);
                 } else {
                     //nejsme operabilni
-                    log += QString("-->tx: ERROR\r\n");
-                    t_comm_binary_rollidn reply_st = {(uint16_t)VI_PLC_PC_ERROR,
-                                                       __to_rev_endian(error_mask), 0, 0};
-                    QByteArray reply_by((const char *)&reply_st, sizeof(t_comm_binary_rollidn));
-                    iface.on_write(reply_by);
+                    reply(VI_PLC_PC_ERROR);
                 }
             }
             break;
             case VI_PLC_PC_BACKGROUND:
             {
-                log += QString("<--rx: BACKGROUND\r\n");
                 error_mask = VI_ERR_OK;
                 if(on_background()){
-
                     //odvysilame vysledek
-                    log += QString("-->tx: BACKGROUND_ACK\r\n");
-                    t_comm_binary_rollidn reply_st = {(uint16_t)VI_PLC_PC_BACKGROUND_ACK,
-                                                      __to_rev_endian(error_mask), 0, 0};
-                    QByteArray reply_by((const char *)&reply_st, sizeof(t_comm_binary_rollidn));
-                    iface.on_write(reply_by);
+                    reply(VI_PLC_PC_BACKGROUND_ACK);
                 }
             }
             break;
             case VI_PLC_PC_CALIBRATE:
             {
-                log += QString("<--rx: CALIBRATE\r\n");
                 store.increment();
 
                 error_mask = VI_ERR_OK;
 
                 on_calibration();
 
-                QImage output(ms.loc.data, ms.loc.cols, ms.loc.rows, QImage::Format_Indexed8);
-                emit present_meas(output, mm_length, mm_diameter);  //vizualizace mereni
-
-                if((th.maxContRect.size.height * th.maxContRect.size.width) < area_min)
-                    error_mask |= VI_ERR_MEAS1;
-
-                if((ms.eliptic.diameter * ms.eliptic.length) < area_min)
-                    error_mask |= VI_ERR_MEAS2;
-
-                if(error_mask == VI_ERR_OK){
-
-                    //count new scale factor + save in config
-                    double c1d = (ord_st.width / 10.0) / ms.eliptic.length;
-                    t_setup_entry c1; par.ask("calibr-x", &c1);
-                    c1.set(c1d);
-                    par.replace("calibr-x", c1);
-
-                    log += QString("cal-x: ref=%1[mm],pix=%2,ratio=%3\r\n")
-                            .arg(ord_st.width / 10.0)
-                            .arg(ms.eliptic.length)
-                            .arg(c1d);
-
-                    //count new scale factor + save in config
-                    double c2d = (ord_st.height / 10.0) / ms.eliptic.diameter;
-                    t_setup_entry c2; par.ask("calibr-y", &c2);
-                    c2.set(c2d);
-                    par.replace("calibr-y", c2);
-
-                    log += QString("cal-y: ref=%1[mm],pix=%2,ratio=%3\r\n")
-                            .arg(ord_st.height / 10.0)
-                            .arg(ms.eliptic.diameter)
-                            .arg(c2d);
-
-                    __to_file();
-                }
-
-                //potvrdime vysledek - pokud se nepovedlo vratime nejaky error bit + nesmyslne hodnoty mereni width & height
-                //jinak hodnoty v raw == v pixelech
-                t_comm_binary_rollidn reply_st = {(uint16_t)VI_PLC_PC_CALIBRATE_ACK,
-                                                  __to_rev_endian(error_mask),
-                                                  __to_rev_endian(ms.eliptic.length),
-                                                  __to_rev_endian(ms.eliptic.diameter)};
-                QByteArray reply_by((const char *)&reply_st, sizeof(t_comm_binary_rollidn));
-                iface.on_write(reply_by);
-
-                log += QString("-->tx: CALIBRATE_ACK\r\n");
-                log += QString("-->tx: ord(%1),flags(0x%2),len(%3),dia(%4)\r\n")
-                        .arg(unsigned(reply_st.ord))
-                        .arg(unsigned(reply_st.flags), 2, 16, QChar('0'))
-                        .arg(ms.eliptic.length)
-                        .arg(ms.eliptic.diameter);
+                reply(VI_PLC_PC_CALIBRATE_ACK);
             }
             break;
         }
@@ -354,8 +326,7 @@ public slots:
     //obsahuje snimani obrazu a analyzu
     int on_meas(void){
 
-        mm_diameter = 0;  //signal invalid measurement
-        mm_length = 0;
+        __init_measurement_res();
 
         int res = on_trigger();
         if(!res) res = on_trigger(); //opakujem 2x pokud se mereni nepovede
@@ -506,7 +477,7 @@ public:
         return 1;
     }
 
-    t_roll_idn_collection(QString &js_config, QObject *parent = NULL):
+    t_collection(QString &js_config, QObject *parent = NULL):
         QObject(parent),
         path(js_config),
         par(__from_file()),
@@ -544,7 +515,7 @@ public:
         last_luminance = ref_luminance = -1;  //indikuje ze nebylo dosud provedeno
     }
 
-    ~t_roll_idn_collection(){
+    ~t_collection(){
 
     }
 };

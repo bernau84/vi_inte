@@ -11,7 +11,7 @@
 //};
 
 //puvodne to byly ciala ale jakubneu to pochopil jako masku - budiz tedy
-enum e_vi_plc_pc_ords {
+enum e_vi_pc_ords {
 
     VI_PLC_PC_TRIGGER = (0 << 8),
     VI_PLC_PC_ABORT = (1 << 8),
@@ -27,7 +27,7 @@ enum e_vi_plc_pc_ords {
 };
 
 
-enum e_vi_plc_pc_errors {
+enum e_vi_pc_errors {
 
     VI_ERR_OK = (1 << 0),
     VI_ERR_COMM_SYNTAX = (1 << 1),
