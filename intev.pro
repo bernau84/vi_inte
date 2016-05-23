@@ -2,13 +2,13 @@ QT += core gui
 QT += widgets
 QT += network
 
-TARGET = roll_idn_coll4
+TARGET = intev
 CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 2.10.5.10
+VERSION = 1.1.6.1
 
 SOURCES += main.cpp \
     mainwindow.cpp
@@ -43,7 +43,8 @@ DISTFILES += \
     processing/js_config_roi_colortransf.txt \
     processing/js_config_threshold_cont.txt \
     js_config_collection_all.txt \
-    processing/js_config_rectification.txt
+    processing/js_config_rectification.txt \
+    config.txt
 
 HEADERS += \
     cameras/i_camera_base.h \
@@ -51,7 +52,6 @@ HEADERS += \
     t_vi_setup.h \
     cameras/basler/t_vi_camera_basler_usb.h \
     cameras/offline/t_vi_camera_offline_file.h \
-    t_collection.h \
     t_record_storage.h \
     t_vi_specification.h \
     cinterface/i_comm_generic.h \
@@ -68,7 +68,9 @@ HEADERS += \
     processing/i_proc_stage.h \
     processing/t_vi_proc_roll_approx.h \
     processing/t_vi_proc_threshold_cont.h \
-    cameras/basler/t_vi_camera_basler_gige.h
+    cameras/basler/t_vi_camera_basler_gige.h \
+    t_inteva_app.h \
+    i_collection.h
 
 DEFINES += USE_USB
 #DEFINES += USE_GIGE

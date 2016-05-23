@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include "mainwindow.h"
 
-#include "t_roll_idn_collection.h"
+#include "t_inteva_app.h"
+#include "t_vi_specification.h"
 
 int main(int argc, char *argv[])
 {
@@ -52,13 +53,14 @@ int main(int argc, char *argv[])
     pe.insert(log_config_key, log_config_value);
 
     QApplication a(argc, argv);
-//    a.setApplicationVersion("1.1.2016.03.31");
 
     MainWindow w;
     w.show();
 
+    t_comm_tcp_inteva comm(9199);  //todo - read from config or postpone settings to t_collection
+
     QString config_path = QDir::currentPath() + "/config.txt";
-    t_roll_idn_collection worker(config_path);
+    t_inteva_app worker(comm, config_path);
     worker.initialize();
 
     QObject::connect(&worker, SIGNAL(present_meas(QImage &,double,double)),  //vizualizace mereni
@@ -75,11 +77,6 @@ int main(int argc, char *argv[])
 
     QObject::connect(&w, SIGNAL(on_ready_button()),
                      &worker, SLOT(on_ready()));  //kontrola kamery & nastaveni expozice pokud je podporovano
-
-#ifdef QT_DEBUG
- //  worker.on_trigger(); //start measuring
- //   worker.on_trigger(); //start measuring
-#endif //
 
     return a.exec();
 }

@@ -14,7 +14,7 @@ static const QString proc_fitline_defconfigpath(":/js_config_fitline.txt");
 
 class t_vi_proc_fitline : public i_proc_stage
 {
-private:
+public:
     Mat *src;
     Mat loc;
     Vec4f line;

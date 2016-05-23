@@ -192,7 +192,7 @@ public:
  * a tak to chcem multiplatformni
  */
 
-class t_collection : public QObject, public QJsonObject {
+class t_vi_setup : public QObject, public QJsonObject {
 
     Q_OBJECT
 signals:
@@ -236,19 +236,19 @@ public:
 
     /*! \brief create empty one
      */
-    t_collection(QObject *parent = 0):
+    t_vi_setup(QObject *parent = 0):
         QObject(parent), QJsonObject(){
 
     }
 
     /*! \brief create inicialized
      */
-    explicit t_collection(const QJsonObject &def):
+    explicit  t_vi_setup(const QJsonObject &def):
         QObject(0), QJsonObject(def){
 
     }
 
-    ~t_collection(){
+    ~t_vi_setup(){
 
     }
 };

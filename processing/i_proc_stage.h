@@ -39,7 +39,7 @@ private:
     }
 
 protected:
-   t_collection par;
+   t_vi_setup par;
    QElapsedTimer etimer;
    qint64 elapsed;
    QString fancy_name;

@@ -58,31 +58,31 @@ enum e_vi_pc_errors {
 };
 
 #pragma pack(push,1)
-struct t_comm_binary_rollidn {
+struct t_comm_binary_inteva {
 
     uint16_t ord;
     uint32_t flags;
-    uint32_t width;
-    uint32_t height;
+    uint32_t perc_l;
+    uint32_t perc_r;
+    uint32_t gap_mm;
 };
 #pragma pack(pop)
 
-
 //verze tcp parseru a interface specificka pro ucely projektu roll-idn
 //tvarime se jako tcp server a protokol je binarni
-class t_comm_tcp_rollidn : public t_comm_tcp {
+class t_comm_tcp_inteva : public t_comm_tcp {
 
 private:
-    te_comm_parser_binary<t_comm_binary_rollidn> parser;
+    te_comm_parser_binary<t_comm_binary_inteva> parser;
 
 public:
-    t_comm_tcp_rollidn(uint16_t port, QObject *parent = NULL):
+    t_comm_tcp_inteva(uint16_t port, QObject *parent = NULL):
         parser(),
         t_comm_tcp(port, &parser, parent)
     {
     }
 
-    virtual ~t_comm_tcp_rollidn(){
+    virtual ~t_comm_tcp_inteva(){
 
     }
 

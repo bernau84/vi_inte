@@ -12,15 +12,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "cinterface/i_comm_generic.h"
+
 #include "cameras/basler/t_vi_camera_basler_usb.h"
 #include "cameras/basler/t_vi_camera_basler_gige.h"
 #include "cameras/offline/t_vi_camera_offline_file.h"
-#include "processing/t_vi_proc_roi_colortransf.h"
-#include "processing/t_vi_proc_threshold_cont.h"
-#include "processing/t_vi_proc_roll_approx.h"
-#include "processing/t_vi_proc_sub_background.h"
-#include "processing/t_vi_proc_statistic.h"
-#include "processing/t_vi_proc_rectification.h"
 
 #include "t_vi_setup.h"
 #include "t_vi_specification.h"
@@ -33,7 +28,7 @@ class i_collection : public QObject {
 
     Q_OBJECT
 
-private:
+protected:
 
     QElapsedTimer etimer;
     QElapsedTimer ptimer;
@@ -42,8 +37,10 @@ private:
     QString path;
     QString log;
 
-    t_results props;
-    t_collection par;
+    uint8_t *img;
+    i_vi_camera_base::t_campic_info info;
+
+    t_vi_setup par;
     bool abort;
     uint32_t error_mask;  //suma flagu e_vi_plc_pc_errors
 
@@ -53,24 +50,12 @@ private:
     t_vi_camera_basler_gige cam_device;
 #endif //USE_XXX
 
-    t_vi_camera_offline_file cam_simul;
+    t_vi_camera_offline_file cam_simul;  //pokud neni pripojena zadna basler kamera 
+        //pracuje diky tomu s offline fotkami
 
-    t_vi_proc_rectify   re;
-    t_vi_proc_colortransf ct;
-    t_vi_proc_threshold th;
-    t_vi_proc_roll_approx ms;
-    t_vi_proc_sub_backgr bc;
-    t_vi_proc_statistic st;
+    i_comm_generic *iface;  //komunikacni iterface
 
-    t_comm_tcp_rollidn iface;
-
-    t_record_storage store;
-
-    float ref_luminance;   //referencni jas odecteny po ustaleni atoexpozice - prvni po startu programu
-    float last_luminance;   //referencni jas odecteny po ustaleni atoexpozice - poslendi mereni backgroundu
-    float act_luminance;   //jas posledniho snimku
-
-    uint64_t exposition;  //aktualni hodnota expozice
+    t_record_storage store;  //ukladani vysledku a logu do kruhoveho bufferu 
 
     //constructor helpers
     QJsonObject __from_file(){
@@ -111,8 +96,38 @@ private:
     }
 
 protected:
+
+    //preproces - spusten pred snimanim obrazu
+    virtual void __init_measurement() = 0;
+
+    //potprocess - zpracovani hodnot z analyz
+    virtual void __eval_measurement() = 0;
+
+    //vlastni mereni - pravdepodoben vyuzitim i_proc_stage retezce
+    virtual void __proc_measurement() = 0;
+
+    //priprava datagramu pred odeslanim - uzitim private hodnot
+    virtual unsigned __serialize_measurement_res(void *to, unsigned reserved) = 0;
+
+    //rozklad datagramu do private hodnot
+    virtual void __deserialize_measurement_res(void *from, unsigned reserved) = 0;
+
     void reply(unsigned ord){
 
+        #pragma pack(push,1)
+        struct t_comm_uni {
+
+            uint16_t ord;
+            uint32_t flags;
+            uint32_t payload[32];
+        } comm_uni;
+        #pragma pack(pop)
+
+        comm_uni.ord = ord;
+        comm_uni.flags = error_mask;
+        unsigned comm_uni_sz = __serialize_measurement_res(comm_uni.payload, sizeof(comm_uni.payload));
+
+        //TODO: vyskladat zobecneny paket a odeslat
         switch(ord){
 
             case VI_PLC_PC_TRIGGER_ACK: //meas
@@ -131,9 +146,19 @@ protected:
                 log += QString("-->tx: RESULT\r\n");
             break;
         }
+
+        QByteArray qcomm_uni((const char *)&comm_uni, comm_uni_sz);
+        iface->on_write(qcomm_uni);
     }
 
     void receive(unsigned ord, QByteArray raw){
+
+        //readout flags
+        uint8_t *raw_bt = (uint8_t *)raw.data();
+        memcpy(&error_mask, raw_bt, sizeof(error_mask));
+        __serialize_measurement_res(raw_bt, raw.length() - sizeof(error_mask));
+
+        log.clear();
 
         switch(ord){
 
@@ -158,17 +183,9 @@ protected:
         }
     }
 
-
-    void __init_measurement_res() = 0;
-
-    void __eval_measurement_res() = 0;
-
-    void __serialize_measurement_res(void *to, unsigned reserved) = 0;
-
-    void __deserialize_measurement_res(void *from, unsigned reserved) = 0;
-
 public slots:
 
+    //defaultni chovani na standarni akce
     virtual int on_done(int res, void *img){
 
         res = res;
@@ -179,9 +196,9 @@ public slots:
     //slot co se zavola s prijmem povelu od plc
     virtual int on_order(unsigned ord, QByteArray raw){
 
-        log.clear();
-
         etimer.start();
+
+        receive(ord, raw);
 
         switch(ord){
 
@@ -195,6 +212,7 @@ public slots:
                 reply(VI_PLC_PC_TRIGGER_ACK); //tx ack to plc
 
                 on_meas();
+
                 reply(VI_PLC_PC_RESULT);  //tx results to plc
             }
             break;
@@ -243,7 +261,7 @@ public slots:
 
     //odpaleni snimani analyza a odreportovani vysledku
     //volame zatim rucne
-    int on_trigger(bool background = false){
+    virtual int on_trigger(){
 
         const int img_reserved = 3000 * 2000;
         uint8_t *img = (uint8_t *) new uint8_t[img_reserved];
@@ -309,13 +327,7 @@ public slots:
         emit present_preview(snapshot, 0, 0);    //vizualizace preview kamery
 
         //process measurement or save new background
-        cv::Mat src(info.h, info.w, CV_8U, img);
-        int order = (background) ? t_vi_proc_sub_backgr::SUBBCK_REFRESH : t_vi_proc_sub_backgr::SUBBCK_SUBSTRACT;
-        re.proc(order, &src);
-
-        //calc average brightness
-        st.proc(t_vi_proc_statistic::STATISTIC_BRIGHTNESS, &src);
-        act_luminance = st.out.at<float>(0); //extract luminance from output matrix
+        __proc_measurement();
 
         if(img) delete[] img;
 
@@ -324,34 +336,35 @@ public slots:
     }
 
     //obsahuje snimani obrazu a analyzu
-    int on_meas(void){
+    virtual int on_meas(void){
 
-        __init_measurement_res();
+        __init_measurement();
 
+        //v ramci on_trigger se vola i __proc_measurement()
         int res = on_trigger();
         if(!res) res = on_trigger(); //opakujem 2x pokud se mereni nepovede
         if(res){
 
-            __eval_measurement_res();  //prepocet na mm
+            __eval_measurement();  //prepocet na mm
 
             QVector<QRgb> colorTable;
             for (int i = 0; i < 256; i++)
                 colorTable.push_back(QColor(i, i, i).rgb());
 
-            //vizualizace mereni
-            QImage output(ms.loc.data, ms.loc.cols, ms.loc.rows, QImage::Format_Indexed8);
-            output.setColorTable(colorTable);
-            emit present_meas(output, mm_length, mm_diameter);
+//            //vizualizace mereni
+//            QImage output(th.loc.data, th.loc.cols, th.loc.rows, QImage::Format_Indexed8);
+//            output.setColorTable(colorTable);
+//            emit present_meas(output, mm_length, mm_diameter);
         } else {
 
-            QImage output(":/error-498-fix.gif");
-            emit present_meas(output, mm_length, mm_diameter);
+//            QImage output(":/error-498-fix.gif");
+//            emit present_meas(output, mm_length, mm_diameter);
         }
 
         return res;
     }
 
-    int on_abort(){
+    virtual int on_abort(){
 
         abort = true;
 
@@ -359,100 +372,30 @@ public slots:
         return 1;
     }
 
-    int on_ready(){
+    virtual int on_ready(){
 
-//        //zafixujeme nastaveni expozice a ulozime si referencni hodnotu jasu
-//        if(ref_luminance < 0){
+        error_mask = VI_ERR_OK;
+        if(cam_device.sta != i_vi_camera_base::CAMSTA_PREPARED){
 
-            error_mask = VI_ERR_OK;
-            if(cam_device.sta != i_vi_camera_base::CAMSTA_PREPARED){
-
-                error_mask |= VI_ERR_CAM_NOTFOUND;
-                return 0;
-            }
-
-//FIXME: zaremovano protoze zpusobovalo pady - takhle zustava ref-luminance zaporna a nic se proto
-            //se expozici za behu nedeje
-
-//            else if(cam_device.exposure(100, i_vi_camera_base::CAMVAL_AUTO_TOLERANCE)){ //100us tolerance to settling exposure
-
-//               on_trigger(true); //true == background mode
-//               if(error_mask == VI_ERR_OK){
-
-//                  last_luminance = ref_luminance = act_luminance;
-//                  return 1;
-//               }
-//            } else {
-
-//               error_mask |= VI_ERR_CAM_EXPOSITION;  //autoexpozice failovala
-//               return 0;
-//            }
-//        }
+            error_mask |= VI_ERR_CAM_NOTFOUND;
+            return 0;
+        }
 
         return 1;
     }
 
-    /*! vychazime z referenci expoxice a jasu sceny po startu
-     * pokud se jas sceny lisi, korigujemve stejnem pomeru i expozici
-     * !referencni expozici ani jas nemenime !
-     */
-    int on_background(){
+    virtual int on_background(){
 
-        bool mode = true; //false - bez noveho pozadi
-
-        if((ref_luminance > 0) && cam_device.sta == i_vi_camera_base::CAMSTA_PREPARED){
-
-            exposition = cam_device.exposure(0, i_vi_camera_base::CAMVAL_UNDEF);
-
-            float dif_luminance = ref_luminance / last_luminance;
-            if(dif_luminance > 1.05){ //moc temne
-
-                mode = true;    //budem chti novy snime pozadi
-                //pomerove zvednem expozici nahoru
-                int64_t nexpo = exposition * dif_luminance;
-                nexpo = cam_device.exposure(nexpo, i_vi_camera_base::CAMVAL_ABS);
-            } else if(dif_luminance < 0.95){  //moc svtele
-
-                mode = true;    //budem chtit novy snimek pozadi
-                //pomerove snizime expozici dolu
-                int64_t nexpo = exposition * dif_luminance;
-                nexpo = cam_device.exposure(nexpo, i_vi_camera_base::CAMVAL_ABS);
-            }
-        }
-
-        if(on_trigger(mode)){ //true == background mode
-
-            QVector<QRgb> colorTable;
-            for (int i = 0; i < 256; i++)
-                colorTable.push_back(QColor(i, i, i).rgb());
-
-            //alespon rekrifikovany obrazek
-            QImage output(re.out.data, re.out.cols, re.out.rows, QImage::Format_Indexed8);
-            output.setColorTable(colorTable);
-            emit present_meas(output, 0, 0);
-        } else {
-
-            QImage output(":/error-498-fix.gif");
-            emit present_meas(output, 0, 0);
-        }
-
-        if(error_mask == VI_ERR_OK){
-
-            last_luminance = act_luminance;
-            return 1;
-        }
-
-        return 0;
+        return 1;
     }
 
-    int on_calibration(){
-
-        last_luminance = ref_luminance = -1;  //indikuje ze nebylo dosud provedeno nastaeni expozice
+    virtual int on_calibration(){
         return on_trigger();
     }
 
 signals:
-    void process_next(int p1, void *p2);  //pro vstupovani mezi jednotlive analyzy
+    void process_next(int p1, void *p2);  //pro vstupovani mezi jednotlive analyzy - see intercept() slot
+
     void present_meas(QImage &im, double length, double diameter);  //vizualizace mereni
     void present_preview(QImage &im, double length, double diameter);    //vizualizace preview kamery
 
@@ -477,45 +420,21 @@ public:
         return 1;
     }
 
-    t_collection(QString &js_config, QObject *parent = NULL):
+    i_collection(QString &js_config, i_comm_generic *comm,  QObject *parent = NULL):
         QObject(parent),
         path(js_config),
         par(__from_file()),
         cam_device(path),
         cam_simul(path),
         abort(false),
-        re(path),
-        ct(path),
-        th(path),
-        ms(path),
-        bc(path),
-        iface(par["tcp-server-port"].get().toInt(), this),
+        iface(comm),
         store(QDir::currentPath() + "/storage")
     {
-        //zretezeni analyz
-        QObject::connect(&re, SIGNAL(next(int, void *)), &bc, SLOT(proc(int, void *)));
-        QObject::connect(&bc, SIGNAL(next(int, void *)), &th, SLOT(proc(int, void *)));
-        QObject::connect(&th, SIGNAL(next(int, void *)), &ms, SLOT(proc(int, void *)));
-
-        /*! pokud je potreba je mozne mezi analyzy vstoupit slotem intercept(int, void *)
-         * tohoto obektu a pomoci toho treba runtime menit parametry
-         */
-
-        /*! \todo - navazat vystupem ms na ulozeni vysledku analyzy (obrazek) */
-
         //z vnejsu vyvolana akce
-        QObject::connect(&iface, SIGNAL(order(unsigned, QByteArray)), this, SLOT(on_order(unsigned, QByteArray)));
-
-        if(0 >= (area_min = par["contour_minimal"].get().toDouble()))
-            area_min = ERR_MEAS_MINAREA_TH;
-
-        if(0 >= (area_max = par["contour_maximal"].get().toDouble()))
-            area_max = ERR_MEAS_MAXAREA_TH;
-
-        last_luminance = ref_luminance = -1;  //indikuje ze nebylo dosud provedeno
+        QObject::connect(iface, SIGNAL(order(unsigned, QByteArray)), this, SLOT(on_order(unsigned, QByteArray)));
     }
 
-    ~t_collection(){
+    virtual ~i_collection(){
 
     }
 };

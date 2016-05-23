@@ -6,7 +6,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-class t_vi_camera_attrib : public t_collection {
+class t_vi_camera_attrib : public t_vi_setup {
 
 private:
 
@@ -29,7 +29,7 @@ private:
 
 public:
     t_vi_camera_attrib(const QString &path = "js_camera_base.txt"):
-        t_collection(__set_from_file(path))
+        t_vi_setup(__set_from_file(path))
     {
 
     }

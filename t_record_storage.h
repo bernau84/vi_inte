@@ -12,7 +12,7 @@
 #define RECORD_PATTERN_IMG  "pic%1.bmp"
 #define RECORD_PATTERN_CNF  "log.cnf"
 
-class t_roll_idn_record_storage {
+class t_record_storage {
 
 private:
     QString m_storage_path;
@@ -21,7 +21,7 @@ private:
     int m_counter;
 
 public:
-    t_roll_idn_record_storage(QString storage_path, int history = 100):
+    t_record_storage(QString storage_path, int history = 100):
         m_storage_path(storage_path),
         m_cnf(m_storage_path + "/" + RECORD_PATTERN_CNF, QSettings::IniFormat),
         m_history(history)
@@ -37,7 +37,7 @@ public:
         m_history = m_cnf.value("HISTORY", m_history).toInt();
     }
 
-    ~t_roll_idn_record_storage()
+    ~t_record_storage()
     {
         m_cnf.setValue("LAST", m_counter);
         m_cnf.setValue("HISTORY", m_history);
