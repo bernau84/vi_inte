@@ -71,13 +71,19 @@ public:
     //new value is not promoted to json file
     QVariant config(QString &name, QVariant *value){
 
-        if(!par.ask(name))
+        t_setup_entry e;
+        if(!par.ask(name, &e)) //+get copy of attr entry
             return QVariant();
 
         if(value){
 
+            qDebug() << "before" << par[name].printout();
+
             QJsonValue jval_set = QJsonValue::fromVariant(*value);
-            QJsonValue jval_get = par[name].set(jval_set);
+            QJsonValue jval_get = e.set(jval_set);
+            par.replace(name, e);  //put back!
+
+            qDebug() << "after" << par[name].printout();
 
             reload(0);
 

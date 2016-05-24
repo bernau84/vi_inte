@@ -149,6 +149,14 @@ public:
         return QJsonObject::insert("__val", get(t)).value();
     }
 
+    /*! \brief serialize object
+     */
+    QString printout(){
+
+        QJsonDocument doc(*this);
+        return doc.toJson(QJsonDocument::Compact);
+    }
+
     /*! \brief init from lists
      */
     t_setup_entry(const QJsonArray &val, const QStringList &name){
@@ -180,6 +188,7 @@ public:
      */
     t_setup_entry(const QJsonObject &val = QJsonObject()):
         QJsonObject(val){
+
 
     }
 };
@@ -225,7 +234,17 @@ public:
         return true;
     }
 
-    /*! \brief overload operator to access full t_setup_entry (not only QObject)
+    /*! \brief debug serialization
+    */
+    QString printout(const QString &title){
+
+        t_setup_entry e;
+        ask(title, &e);
+        QJsonDocument doc(e);
+        return doc.toJson(QJsonDocument::Compact);
+    }
+
+    /*! \brief overload operator to access COPY of full t_setup_entry (not only QObject)
     */
     t_setup_entry operator[](const QString &title){
 

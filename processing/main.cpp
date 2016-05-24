@@ -34,18 +34,21 @@ int main(int argc, char *argv[])
     //xMat src = imread("c:\\Users\\bernau84\\Pictures\\trima_precision_samples\\turnov_hi_70mm_lodia_5_Ldistance_sel.bmp");
     Mat src = imread("4_in_stinitko.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 
-    t_vi_proc_threshold th("proc_config.txt");
-    t_vi_proc_fitline fl("proc_config.txt");
+    t_vi_proc_threshold th("config.txt");
+    t_vi_proc_fitline fl1("config.txt");
+    t_vi_proc_fitline fl2("config.txt");
 
-    QVariant xoffset = 1600;
-    QString pname = "fitline-roi-x";
-    fl.config(pname, &xoffset);
+    QString pname = "search-from";
+    QVariant direct;
 
-    QObject::connect(&th, SIGNAL(next(int, void *)), &fl, SLOT(proc(int, void *)));
+    direct = 0;
+    qDebug() << "fl1 search-from" << fl1.config(pname, &direct);
 
-    //QObject::connect(&bk, SIGNAL(next(int, void *)), &ct, SLOT(proc(int, void *)));
-    //QObject::connect(&ct, SIGNAL(next(int, void *)), &th, SLOT(proc(int, void *)));
-    //QObject::connect(&th, SIGNAL(next(int, void *)), &ms, SLOT(proc(int, void *)));
+    direct = 2;
+    qDebug() << "fl2 search-from" << fl2.config(pname, &direct);
+
+    QObject::connect(&th, SIGNAL(next(int, void *)), &fl1, SLOT(proc(int, void *)));
+    QObject::connect(&th, SIGNAL(next(int, void *)), &fl2, SLOT(proc(int, void *)));
 
     th.proc(0, &src);
 

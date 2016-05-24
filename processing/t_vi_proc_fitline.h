@@ -127,25 +127,29 @@ public slots:
 
         roi.x = roi.y = roi.width = roi.height = 0;
 
-        if(par.ask("fitline-roi-center-x"))
-            roi.x = par["fitline-roi-center-x"].get().toInt();
+        t_setup_entry tmp;
+        if(par.ask("fitline-roi-center-x", &tmp))
+            roi.x = tmp.get().toInt();
 
-        if(par.ask("fitline-roi-center-y"))
-            roi.y = par["fitline-roi-center-y"].get().toInt();
+        if(par.ask("fitline-roi-y", &tmp))
+            roi.y = tmp.get().toInt();
 
-        if(par.ask("fitline-roi-center-width"))
-            roi.width = par["fitline-roi-width"].get().toInt();
+        if(par.ask("fitline-roi-width", &tmp))
+            roi.width = tmp.get().toInt();
 
-        if(par.ask("fitline-roi-center-height"))
-            roi.height = par["fitline-roi-height"].get().toInt();
+        if(par.ask("fitline-roi-center-height", &tmp))
+            roi.height = tmp.get().toInt();
 
         weight = 0;
-        if(par.ask("fitline-weight")) //L1, L2, nebo nejakou jinou vahu
-            weight = par["fitline-weight"].get().toInt();
+        if(par.ask("fitline-weight", &tmp)) //L1, L2, nebo nejakou jinou vahu
+            weight = tmp.get().toInt();
 
         dir = 0;
-        if(par.ask("search-from"))  //"0-left, 1-top, 2-right, 3-bottom",
-            dir = par["search-from"].get().toInt();
+        if(par.ask("search-from", &tmp)){  //"0-left, 1-top, 2-right, 3-bottom",
+
+            qDebug() << "search-from " << tmp.get();
+            dir = tmp.get().toInt();
+        }
 
         return 1;
     }
@@ -154,25 +158,25 @@ private:
     int iproc(int p1, void *p2){
 
         p1 = p1;
-        Mat *src = (Mat *)p2;
+        src = (Mat *)p2;
 
         loc = *src;
 
         line.zeros();
         error = 0;
 
-        if(roi.width == 0) roi.width = src->cols;
-        if(roi.height == 0) roi.height = src->rows;
+        if(roi.width == 0){ roi.x = 0; roi.width = src->cols; }
+        if(roi.height == 0){ roi.y = 0; roi.height = src->rows; }
 
         line = linear_approx(&error);
 
         //vizualizace
         Mat resized;
-        resize(loc, resized, Size((loc.cols/2) & ~0x3, (loc.rows/2) & ~0x3));
+        resize(loc, resized, Size(loc.cols/2, loc.rows/2));
         loc = resized;
-        cv::namedWindow("Roll-approximation", CV_WINDOW_AUTOSIZE);
-        cv::imshow("Roll-approximation", resized);
-        cv::resizeWindow("Roll-approximation", resized.cols, resized.rows);
+        cv::namedWindow("Fitted-Line", CV_WINDOW_AUTOSIZE);
+        cv::imshow("Fitted-Line", resized);
+        cv::resizeWindow("Fitted-Line", resized.cols, resized.rows);
 
         elapsed = etimer.elapsed();
         emit next(1, src); //pousti beze zmeny dal
