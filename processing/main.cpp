@@ -39,13 +39,15 @@ int main(int argc, char *argv[])
     t_vi_proc_fitline fl2("config.txt");
 
     QString pname = "search-from";
-    QVariant direct;
+    QVariant pval;
 
-    direct = 0;
-    qDebug() << "fl1 search-from" << fl1.config(pname, &direct);
+    pval = 0; fl1.config(pname, &pval);
+    pval = 2; fl2.config(pname, &pval);
 
-    direct = 2;
-    qDebug() << "fl2 search-from" << fl2.config(pname, &direct);
+    pname = "fitline-offs-left";
+    pval = 300; fl1.config(pname, &pval);
+    pname = "fitline-offs-right";
+    pval = 300; fl2.config(pname, &pval);
 
     QObject::connect(&th, SIGNAL(next(int, void *)), &fl1, SLOT(proc(int, void *)));
     QObject::connect(&th, SIGNAL(next(int, void *)), &fl2, SLOT(proc(int, void *)));

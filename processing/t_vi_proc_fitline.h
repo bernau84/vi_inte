@@ -19,7 +19,7 @@ public:
     Mat loc;
     Vec4f line;
     float error;
-    cv::Rect roi;
+    int ofs[4];
     int weight;
     int dir;
 
@@ -30,7 +30,7 @@ public:
         fancy_name = "fitline (" + fancy_name + ")";
         reload(0);
         qDebug() << "Filine setup (1-4 roi), weight, direction:" <<
-                    roi.x << roi.y << roi.width << roi.height <<
+                    ofs[0] << ofs[1] << ofs[2] << ofs[3] <<
                     weight << dir;
     }
 
@@ -43,11 +43,16 @@ private:
 
         vector<Point> locations; Vec4f line;   // output, locations of non-zero pixels; vx, vy, x0, y0
 
+        int from_x = ofs[0];
+        int to_x = src->cols - ofs[2];
+        int from_y = ofs[1];
+        int to_y = src->rows - ofs[3];
+
         switch(dir){
             default:
             case 0: //from left
-                for(int y = roi.y; y < roi.y + roi.height; y++)
-                    for(int x = roi.x; x < roi.x + roi.width; x++)
+                for(int y = from_y; y < to_y; y++)
+                    for(int x = from_x; x < to_x; x++)
                         if(src->at<uchar>(Point(x, y))){
 
                             locations.push_back(Point(x, y));
@@ -55,8 +60,8 @@ private:
                         }
             break;
             case 1: //from top
-                for(int x = roi.x; x < roi.x + roi.width; x++)
-                    for(int y = roi.y; y < roi.y + roi.height; y++)
+                for(int x = from_x; x < to_x; x++)
+                    for(int y = from_y; y < to_y; y++)
                         if(src->at<uchar>(Point(x, y))){
 
                             locations.push_back(Point(x, y));
@@ -64,8 +69,8 @@ private:
                         }
             break;
             case 2: //from right
-                for(int y = roi.y + roi.height - 1; y >= roi.y; y--)
-                    for(int x = roi.x; x < roi.x + roi.width; x++)
+                for(int y = from_y; y < to_y; y++)
+                    for(int x = to_x - 1; x >= from_x; x--)
                         if(src->at<uchar>(Point(x, y))){
 
                             locations.push_back(Point(x, y));
@@ -73,8 +78,8 @@ private:
                         }
             break;
             case 3: //from botom
-                for(int x = roi.x; x < roi.x + roi.width; x++)
-                    for(int y = roi.y + roi.height - 1; y >= roi.y; y--)
+                for(int x = from_x; x < to_x; x++)
+                    for(int y = to_y - 1; y >= from_y; y--)
                         if(src->at<uchar>(Point(x, y))){
 
                             locations.push_back(Point(x, y));
@@ -125,20 +130,20 @@ public slots:
 
         p = p;
 
-        roi.x = roi.y = roi.width = roi.height = 0;
+        ofs[0] = ofs[1] = ofs[2] = ofs[3] = 0;
 
         t_setup_entry tmp;
-        if(par.ask("fitline-roi-center-x", &tmp))
-            roi.x = tmp.get().toInt();
+        if(par.ask("fitline-offs-left", &tmp))
+            ofs[0] = tmp.get().toInt();
 
-        if(par.ask("fitline-roi-y", &tmp))
-            roi.y = tmp.get().toInt();
+        if(par.ask("fitline-offs-top", &tmp))
+            ofs[1] = tmp.get().toInt();
 
-        if(par.ask("fitline-roi-width", &tmp))
-            roi.width = tmp.get().toInt();
+        if(par.ask("fitline-offs-right", &tmp))
+            ofs[2] = tmp.get().toInt();
 
-        if(par.ask("fitline-roi-center-height", &tmp))
-            roi.height = tmp.get().toInt();
+        if(par.ask("fitline-offs-bottom", &tmp))
+            ofs[3] = tmp.get().toInt();
 
         weight = 0;
         if(par.ask("fitline-weight", &tmp)) //L1, L2, nebo nejakou jinou vahu
@@ -162,13 +167,15 @@ private:
 
         loc = *src;
 
-        line.zeros();
         error = 0;
-
-        if(roi.width == 0){ roi.x = 0; roi.width = src->cols; }
-        if(roi.height == 0){ roi.y = 0; roi.height = src->rows; }
-
+        line.zeros();
         line = linear_approx(&error);
+
+        cv::line(loc,
+                 Point(line[2]-line[0]*300, line[3]-line[1]*300),
+                 Point(line[2]+line[0]*300, line[3]+line[1]*300),
+                 Scalar(160, 160, 160),
+                 5, CV_AA);
 
         //vizualizace
         Mat resized;

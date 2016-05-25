@@ -3,25 +3,25 @@
                 "__info": "0-left, 1-top, 2-right, 3-bottom",
                 "__def": 0
         },
-        "fitline-roi-width": {
-	        "__info": "roi width",
+        "fitline-offs-left": {
+                "__info": "roi left offset",
         	"__def": 0,
         	"__min": 1,
 		"__max": 4000
 	},
-        "fitline-roi-height": {
-	        "__info": "roi height",
+        "fitline-offs-right": {
+                "__info": "roi right offset",
         	"__def": 0,
         	"__min": 1,
 		"__max": 3000
 	},
-        "fitline-roi-x": {
-	        "__info": "roi center x",
+        "fitline-offs-top": {
+                "__info": "roi top offset",
                 "__def": 0,
                 "__min": 0
 	},
-        "fitline-roi-y": {
-	        "__info": "roi center y",
+        "fitline-offs-bottom": {
+                "__info": "roi bottom offset",
                 "__def": 0,
                 "__min": 0
         },

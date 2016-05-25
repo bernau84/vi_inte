@@ -302,8 +302,8 @@ private:
                 cv::line(loc,
                          Point(line1[2]-line1[0]*100, line1[3]-line1[1]*100),
                          Point(line1[2]+line1[0]*100, line1[3]+line1[1]*100),
-                         Scalar(128, 128 ,128),
-                         2, CV_AA);
+                         Scalar(160, 160 ,160),
+                         5, CV_AA);
 
         ///spodni strana
         tmp = out; cv::flip(tmp, out, 1);
