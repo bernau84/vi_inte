@@ -2,7 +2,7 @@
 #define T_VI_COMM_TCP_CLI
 
 #include "../t_comm_parser_string.h"
-#include "../t_comm_parser_binary.h"
+#include "../t_comm_parser_binary_ex.h"
 #include "../../t_vi_setup.h"
 
 #include <QTcpSocket>
@@ -112,37 +112,6 @@ public:
 
     }
 };
-
-
-//binarni verze tcp parseru - priklad
-class t_comm_tcp_te2 : public t_comm_tcp {
-
-public:
-    t_comm_parser_bin_te2 parser;
-
-    /*
-     * client mode
-     */
-    t_comm_tcp_te2(QUrl &url, QObject *parent = NULL):
-        t_comm_tcp(url, &parser, parent)
-    {
-    }
-
-    /*
-     * server mode
-     */
-    t_comm_tcp_te2(uint16_t port, QObject *parent = NULL):
-        t_comm_tcp(port, &parser, parent)
-    {
-    }
-
-    virtual ~t_comm_tcp_te2(){
-
-    }
-
-};
-
-/*! \todo string parser pokud to bude nutne */
 
 #endif // T_VI_COMM_TCP_CLI
 
