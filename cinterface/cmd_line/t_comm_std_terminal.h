@@ -28,8 +28,8 @@ public:
     }
 
     t_comm_stdte (const char *orders[] = NULL, QObject *parent = NULL):
-        parser(orders),
-        i_comm_generic(&parser, parent)
+        i_comm_generic(&parser, parent),
+        parser(orders)
     {
 
     }

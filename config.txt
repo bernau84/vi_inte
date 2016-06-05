@@ -1,51 +1,6 @@
 {
         "tcp-server-port": {
                 "__info": "tcp listener port",
-                "__def": 9100
-        },
-        "focal-y": {
-                "__info": "vertical focal length in pix",
-                "__def": 1815,
-                "__min": 0.001,
-                "__max": 1000
-        },
-        "focal-x": {
-                "__info": "horizontal focal length in pix",
-                "__def": 1815,
-                "__min": 0.001,
-                "__max": 1000
-        },
-        "geometry-params": {
-                "__info": "projection scene dimension description in mm - distance roll-cam, roll bottom, roll average D, cam height, angle",
-                "__def": [1710, 1030, 10, 2300, 120, 0.0, 0.0, 0.0]
-        },
-        "color-transf": {
-            "__info": "color tranformation code (from open-cv types_c.h), CV_BGR2GRAY (6) by default",
-            "__def": 6
-        },
-        "threshold_method": {
-                "__info": "threshold type (BINARY, INV, +ADAPTIVE, +OTZU)",
-                "__def": "BINARY"
-        },
-        "threshold_positive": {
-                "__info": "threshold ",
-                "__def": 95,
-                "__min": 1,
-                "__max": 255
-        },
-        "threshold_binaryval": {
-                "__info": "threshold binary value",
-                "__def": 255,
-                "__min": 1,
-                "__max": 255
-        },
-        "contour_minimal": {
-                "__info": "valid countour area",
-                "__def": 100,
-                "__min": 1
-        },
-        "contour_sel": {
-                "__info": "selection rule (BIGGEST, ALL)",
-                "__def": "BIGGEST"
+                "__def": 9199
         }
  }

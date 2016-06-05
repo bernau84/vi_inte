@@ -22,7 +22,7 @@ private:
     std::vector<const char *> orders;
 
 public:
-    virtual int feed(uint8_t p){
+    virtual e_comm_parser_res feed(uint8_t p){
 
         if((p == '\r') || (p == '\n')){
 
@@ -33,16 +33,16 @@ public:
 
                     last = tmp;
                     tmp.clear();
-                    return i;
+                    return (e_comm_parser_res)i;
                 }
             }
 
             tmp.clear();
-            return -1;
+            return ECOMM_PARSER_MISMATCH;
         }
 
         tmp.push_back(p);
-        return -2;
+        return ECOMM_PARSER_WAITING_ENDOFORD;
     }
 
     //vraci kod pro registrovany povel

@@ -12,6 +12,18 @@ enum e_comm_parser_res {
     ECOMM_PARSER_WAITING_SYNC = -4      // invalid packet
 };
 
+//puvodne to byly ciala ale jakubneu to pochopil jako masku - budiz tedy
+enum e_com_parser_ords {
+
+    VI_ORD_TRIGGER = ECOMM_PARSER_MATCH_ORDNO_0,
+    VI_ORD_ABORT,
+    VI_ORD_RESULT,
+    VI_ORD_TRIGGER_ACK,
+    VI_ORD_RESULT_ACK,
+    VI_ORD_ERROR, //see e_vi_plc_pc_errors
+    VI_ORD_READY
+};
+
 class i_comm_parser {
 
 protected:

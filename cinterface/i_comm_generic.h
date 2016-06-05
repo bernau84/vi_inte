@@ -29,7 +29,6 @@ class i_comm_generic : public QObject {
     Q_OBJECT
 
 protected:
-    bool has_reponse;
     e_commsta sta;
     i_comm_parser *parser;
 
@@ -38,12 +37,6 @@ private slots:
 
         Q_UNUSED(event);
         refresh();
-    }
-
-    void response(uint8_t ord, QByteArray par){
-
-        Q_UNUSED(ord); Q_UNUSED(par);
-        has_reponse = true;
     }
 
 signals:
@@ -60,7 +53,8 @@ public:
 
     virtual void callback(int ord, QByteArray par){
 
-        ord = ord;       
+        ord = ord;  par = par;
+        qDebug() << "ord" << ord << "par" << par;
     }
 
     e_commsta refresh(){
@@ -77,6 +71,10 @@ public:
                 case ECOMM_PARSER_ERROR:
                     sta = COMMSTA_ERROR;
                 break;
+                case ECOMM_PARSER_WAITING_SYNC:
+                case ECOMM_PARSER_WAITING_ENDOFORD:
+                    //nic
+                break;
                 case ECOMM_PARSER_MISMATCH:
                     //sta = COMMSTA_UNKNOWN;
                     //TODO: trace
@@ -85,7 +83,7 @@ public:
                 case ECOMM_PARSER_MATCH_ORDNO_0:
 
                     std::vector<uint8_t> st_ord = parser->getlast();
-                    QByteArray qt_ord(st_ord.data(), st_ord.size());
+                    QByteArray qt_ord((const char *)st_ord.data(), st_ord.size());
                     callback(ret, qt_ord);
                     emit order(ret, qt_ord);
                 break;
@@ -96,10 +94,10 @@ public:
 
     void query(QByteArray &cmd, int timeout){
 
-        has_response = false;
         on_write(cmd);
 
-        while((timeout > 0) && (has_response == false)){
+        sta = COMMSTA_INPROC;
+        while((timeout > 0) && (sta == COMMSTA_INPROC)){
 
             refresh();
 
@@ -121,8 +119,6 @@ public:
 
         if(VI_COMM_REFRESH_RT)
             this->startTimer(VI_COMM_REFRESH_RT);
-
-        connect(this, SIGNAL(order(uint8_t,QByteArray)), this, SLOT(response(uint8_t,QByteArray));
     }
 
     virtual ~i_comm_generic(){

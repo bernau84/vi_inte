@@ -1,15 +1,3 @@
-QT += core
-QT += network
-QT -= gui
-
-TARGET = cinterface3
-CONFIG += console
-CONFIG -= app_bundle
-
-TEMPLATE = app
-
-SOURCES += main.cpp
-
 HEADERS += \
     i_comm_generic.h \
     i_comm_parser.h \
@@ -18,4 +6,3 @@ HEADERS += \
     tcp_uni/t_comm_tcp_uni.h \
     t_comm_parser_binary_ex.h \
     t_comm_parser_binary.h
-

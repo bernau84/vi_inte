@@ -26,7 +26,7 @@ private:
 
 public:
 
-    virtual int feed(uint8_t c){
+    virtual e_comm_parser_res feed(uint8_t c){
 
         tmp.push_back(c);
 
@@ -41,23 +41,25 @@ public:
                 tmp.clear();
             break;
             case ECOMM_PARSER_WAITING_SYNC:
-                tmp.erase(tmp.begin(), tmp.begin());
+                tmp.erase(tmp.begin(), tmp.begin()); //one byte left
             break;
             case ECOMM_PARSER_WAITING_ENDOFORD:
             case ECOMM_PARSER_ERROR:
             case ECOMM_PARSER_MISMATCH:
             break;
         }
+
+        return res;
     }
 
 public:
-    te_comm_parser_binary_ex(i_comm_dgram &_dg) :
+    t_comm_parser_binary_ex(i_comm_dgram &_dg) :
         i_comm_parser(),
         dg(_dg)
     {
     }
 
-    virtual ~te_comm_parser_binary_ex(){;}
+    virtual ~t_comm_parser_binary_ex(){;}
 };
 
 
