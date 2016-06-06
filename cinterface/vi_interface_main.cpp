@@ -9,20 +9,22 @@ int main(int argc, char *argv[])
 
     t_comm_dgram_intev dgram;
     t_comm_parser_binary_ex parser(dgram);
-    t_comm_tcp rem_serv(9199, &parser);
+    t_comm_tcp serv(9199, &parser);
 
     QEventLoop loop;
-    while((rem_serv.health() != COMMSTA_PREPARED) /* ||
-          (loc_cli.health() != COMMSTA_PREPARED) */){
+    while(serv.health() != COMMSTA_PREPARED){
 
         loop.processEvents();
     }
 
     memset(&dgram.d, 0, sizeof(dgram.d));
+    dgram.d.sync[0] = sync_pattern[0];
+    dgram.d.sync[1] = sync_pattern[1];
+    dgram.d.sync[2] = sync_pattern[2];
     dgram.d.ord = 6;
 
     QByteArray ba((char *)&dgram.d, sizeof(dgram.d));
-    rem_serv.query(ba, 100);
+    serv.query(ba, 100);
 
 //    //dgram.ord = 2;
 //    //loc_cli.query_command(QByteArray((char *)&dgram, sizeof(dgram)), 100);

@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->backButton, SIGNAL(clicked()), this, SLOT(on_background()));
     connect(ui->ackButton, SIGNAL(clicked()), this, SLOT(on_ack()));
 
+    connect(&control, SIGNAL(order(uint8_t,QByteArray)), this, SLOT(on_receive(uint8_t,QByteArray)));
+
     ticker.start(1000);
     connect(&ticker, SIGNAL(timeout()), this, SLOT(on_ready()));
 }
@@ -86,6 +88,11 @@ void MainWindow::on_ready(){
 
     QByteArray dt((const char *)&stru, sizeof(stru));
     control.on_write(dt);
+}
+
+void MainWindow::on_receive(uint8_t ord, QByteArray par){
+
+    qDebug() << "control received order #" << ord;
 }
 
 

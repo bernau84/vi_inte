@@ -31,6 +31,8 @@ public slots:
     void on_background();
     void on_ack();
 
+    void on_receive(uint8_t ord, QByteArray par);
+
 private:
     Ui::MainWindow *ui;
     QTimer ticker;
