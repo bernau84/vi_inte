@@ -2,6 +2,7 @@
 #define T_VI_SPECIFICATION
 
 #include "cinterface\tcp_uni\t_comm_tcp_uni.h"
+#include "cinterface\t_comm_parser_binary.h"
 
 //vyznam bitu definuje dokument "datagram-pl-pc-cpecification"
 //https://docs.google.com/document/d/1mEbkwBnB_EEMSWxB8eQIjCiENeP74lsUJXaSv8vnYG8/edit
@@ -57,27 +58,61 @@ enum e_vi_pc_errors {
     VI_ERR_MEAS9 = (1 << 28)
 };
 
-#pragma pack(push,1)
-struct t_comm_binary_inteva {
 
-    uint16_t ord;
+#pragma pack(push,1)
+typedef struct {
+
+    uint8_t sync[3];
+    uint8_t ord;
     uint32_t flags;
-    uint32_t perc_l;
-    uint32_t perc_r;
-    uint32_t gap_mm;
-};
+    uint32_t leftp;
+    uint32_t rightp;
+    uint32_t gap;
+    uint32_t count;
+} stru_inteva_dgram;
 #pragma pack(pop)
+
+const char sync_inveva_pattern[] = "\x55\xFF\xAA";
+
+class t_comm_dgram_intev : public i_comm_dgram {
+
+private:
+    e_comm_parser_res sta;
+
+public:
+
+    stru_inteva_dgram d;
+
+    virtual e_comm_parser_res validate(std::vector<uint8_t> &stream){
+
+        if(stream.size() < sizeof(stru_inteva_dgram))
+            return ((sta = ECOMM_PARSER_WAITING_ENDOFORD));
+
+        std::copy(stream.begin(), stream.end(), (uint8_t *)&d);  //todo: hlasi warningy; asi lepsi predelat na for cyklus
+
+        if(memcmp(sync_inveva_pattern, d.sync, 3))
+            return ((sta = ECOMM_PARSER_WAITING_SYNC));
+
+        return ((sta = (e_comm_parser_res)d.ord));
+    }
+
+    bool is_valid(){
+
+        return (sta >= ECOMM_PARSER_MATCH_ORDNO_0);
+    }
+};
 
 //verze tcp parseru a interface specificka pro ucely projektu roll-idn
 //tvarime se jako tcp server a protokol je binarni
 class t_comm_tcp_inteva : public t_comm_tcp {
 
 private:
-    te_comm_parser_binary<t_comm_binary_inteva> parser;
+    t_comm_dgram_intev dgram;
+    t_comm_parser_binary_ex parser;
 
 public:
     t_comm_tcp_inteva(uint16_t port, QObject *parent = NULL):
-        parser(),
+        parser(dgram),
         t_comm_tcp(port, &parser, parent)
     {
     }

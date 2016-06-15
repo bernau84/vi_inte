@@ -53,7 +53,6 @@ HEADERS += \
     cameras/basler/t_vi_camera_basler_usb.h \
     cameras/offline/t_vi_camera_offline_file.h \
     t_record_storage.h \
-    t_vi_specification.h \
     cinterface/i_comm_generic.h \
     cinterface/i_comm_parser.h \
     cinterface/t_comm_parser_binary.h \
@@ -70,7 +69,9 @@ HEADERS += \
     processing/t_vi_proc_threshold_cont.h \
     cameras/basler/t_vi_camera_basler_gige.h \
     t_inteva_app.h \
-    i_collection.h
+    i_collection.h \
+    cinterface/t_comm_parser_binary_ex.h \
+    t_inteva_specification.h
 
 DEFINES += USE_USB
 #DEFINES += USE_GIGE

@@ -7,7 +7,7 @@
 #include "mainwindow.h"
 
 #include "t_inteva_app.h"
-#include "t_vi_specification.h"
+#include "t_inteva_specification.h"
 
 int main(int argc, char *argv[])
 {

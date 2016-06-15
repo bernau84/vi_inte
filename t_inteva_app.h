@@ -4,6 +4,7 @@
 #include <QObject>
 #include <stdio.h>
 #include "i_collection.h"
+#include "t_inteva_specification.h"
 
 #include "processing/t_vi_proc_fitline.h"
 #include "processing/t_vi_proc_threshold_cont.h"
@@ -29,11 +30,14 @@ private:
     float perc_rfit;
     float mm_gap;
 
+    uint32_t meas_count;
+
     //preproces - spusten pred snimanim obrazu
     void __init_measurement() {
 
         perc_lfit = perc_rfit = 0;
         mm_gap = 0.0;
+        meas_count = 0;
     }
 
     //potprocess - zpracovani hodnot z analyz 
@@ -51,41 +55,38 @@ private:
     }
 
     //priprava datagramu pred odeslanim - uzitim private hodnot 
-    unsigned __serialize_measurement_res(void *to, unsigned reserved) {
+    void __serialize_measurement_res(unsigned ord, QByteArray &to) {
 
-        if(reserved < 3*sizeof(uint32_t))
-            return 0;
-
-        uint8_t *pto = (uint8_t *)to;
         uint32_t i_perc_lfit = 10 * perc_lfit;
         uint32_t i_perc_rfit = 10 * perc_rfit;
         uint32_t i_mm_gap = 10 * mm_gap;
 
-        memcpy(pto, &i_perc_lfit, sizeof(uint32_t)); pto += sizeof(uint32_t);
-        memcpy(pto, &i_perc_rfit, sizeof(uint32_t)); pto += sizeof(uint32_t);
-        memcpy(pto, &i_mm_gap, sizeof(uint32_t)); pto += sizeof(uint32_t);
+        //typedef struct {
+        //  uint8_t sync[3];
+        //  uint8_t ord;
+        //  uint32_t flags;
+        //  uint32_t leftp;
+        //  uint32_t rightp;
+        //  uint32_t gap;
+        //  uint32_t count;
+        //} stru_inteva_dgram;
+        stru_inteva_dgram d = {
+            sync_inveva_pattern[0], sync_inveva_pattern[1], sync_inveva_pattern[2],
+            ord,
+            error_mask,
+            i_perc_lfit, i_perc_rfit, i_mm_gap,
+            meas_count
+        };
 
-        return pto - (uint8_t *)to;
+        to = QByteArray((const char *)&d, sizeof(d));
     }
 
     //rozklad datagramu do private hodnot 
-    void __deserialize_measurement_res(void *from, unsigned reserved) {
+    void __deserialize_measurement_res(unsigned ord, QByteArray &from) {
 
-        if(reserved < 3*sizeof(uint32_t))
-            return;
-
-        uint8_t *pfrom = (uint8_t *)from;
-        uint32_t i_perc_lfit;
-        uint32_t i_perc_rfit;
-        uint32_t i_mm_gap;
-
-        memcpy(&i_perc_lfit, pfrom, sizeof(uint32_t)); pfrom += sizeof(uint32_t);
-        memcpy(&i_perc_rfit, pfrom, sizeof(uint32_t)); pfrom += sizeof(uint32_t);
-        memcpy(&i_mm_gap, pfrom, sizeof(uint32_t)); pfrom += sizeof(uint32_t);
-
-        perc_lfit = i_perc_lfit / 10.0;
-        perc_rfit = i_perc_rfit / 10.0;
-        mm_gap = i_mm_gap / 10.0;
+        //todo: nic nepotrebujem asi jen vyhodnoceni chyby ridici strany
+        ord = ord;
+        from = from;
     }	
 
 public:

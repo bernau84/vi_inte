@@ -32,7 +32,7 @@ public:
 
         std::copy(stream.begin(), stream.end(), (uint8_t *)&d);
 
-        if(memcmp(sync_pattern, d.sync, sizeof(d.sync)))
+        if(memcmp(sync_pattern, d.sync, 3))
             return ((sta = ECOMM_PARSER_WAITING_SYNC));
 
         return ((sta = (e_comm_parser_res)d.ord));

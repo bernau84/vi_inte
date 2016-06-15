@@ -18,7 +18,7 @@
 #include "cameras/offline/t_vi_camera_offline_file.h"
 
 #include "t_vi_setup.h"
-#include "t_vi_specification.h"
+#include "t_inteva_specification.h"
 #include "t_record_storage.h"
 
 //global definition of txt remote orders
@@ -107,25 +107,16 @@ protected:
     virtual void __proc_measurement() = 0;
 
     //priprava datagramu pred odeslanim - uzitim private hodnot
-    virtual unsigned __serialize_measurement_res(void *to, unsigned reserved) = 0;
+    virtual void __serialize_measurement_res(unsigned ord, QByteArray &to) = 0;
 
     //rozklad datagramu do private hodnot
-    virtual void __deserialize_measurement_res(void *from, unsigned reserved) = 0;
+    virtual void __deserialize_measurement_res(unsigned ord, QByteArray &from) = 0;
 
+    //vola serialize intefrace abysme z aktualnich hodnot mereni a stavu vygenerovali datagram
     void reply(unsigned ord){
 
-        #pragma pack(push,1)
-        struct t_comm_uni {
-
-            uint16_t ord;
-            uint32_t flags;
-            uint32_t payload[32];
-        } comm_uni;
-        #pragma pack(pop)
-
-        comm_uni.ord = ord;
-        comm_uni.flags = error_mask;
-        unsigned comm_uni_sz = __serialize_measurement_res(comm_uni.payload, sizeof(comm_uni.payload));
+        QByteArray raw;
+        __serialize_measurement_res(ord, raw);
 
         //TODO: vyskladat zobecneny paket a odeslat
         switch(ord){
@@ -147,16 +138,13 @@ protected:
             break;
         }
 
-        QByteArray qcomm_uni((const char *)&comm_uni, comm_uni_sz);
-        iface->on_write(qcomm_uni);
+        iface->on_write(raw);
     }
 
+    //vola serialize intefrace abysme si mohli data nacpat do nejakych globalnich hodnot
     void receive(unsigned ord, QByteArray raw){
 
-        //readout flags
-        uint8_t *raw_bt = (uint8_t *)raw.data();
-        memcpy(&error_mask, raw_bt, sizeof(error_mask));
-        __serialize_measurement_res(raw_bt, raw.length() - sizeof(error_mask));
+        __deserialize_measurement_res(ord, raw);
 
         log.clear();
 

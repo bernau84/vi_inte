@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
     dgram.d.sync[2] = sync_pattern[2];
     dgram.d.ord = 6;
 
-    QByteArray ba((char *)&dgram.d, sizeof(dgram.d));
-    serv.query(ba, 100);
+//    QByteArray ba((char *)&dgram.d, sizeof(dgram.d));
+//    serv.query(ba, 100);
 
 //    //dgram.ord = 2;
 //    //loc_cli.query_command(QByteArray((char *)&dgram, sizeof(dgram)), 100);
