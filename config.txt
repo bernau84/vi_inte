@@ -2,5 +2,9 @@
         "tcp-server-port": {
                 "__info": "tcp listener port",
                 "__def": 9199
+        },
+        "storage-path": {
+                "__info": "writable path for logs and result pictures",
+                "__def": ""
         }
  }

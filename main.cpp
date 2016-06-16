@@ -57,10 +57,17 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    t_comm_tcp_inteva comm(9199);  //todo - read from config or postpone settings to t_collection
-
+    // default config
     QString config_path = QDir::currentPath() + "/config.txt";
-    t_inteva_app worker(comm, config_path);
+    QFile f_def(config_path);  //from resources
+    f_def.open(QIODevice::ReadOnly | QIODevice::Text);
+    QJsonDocument js_doc = QJsonDocument::fromJson(f_def.readAll());
+    t_vi_setup config(js_doc.object());
+    int port = config["tcp-server-port"].get().toInt();
+    QString storage = config["storage-path"].get().toString();
+
+    t_comm_tcp_inteva comm(port ? port : 9199);  //todo - read from config or postpone settings to t_collection
+    t_inteva_app worker(comm, storage, config_path);
     worker.initialize();
 
     QObject::connect(&worker, SIGNAL(present_meas(QImage &,double,double)),  //vizualizace mereni

@@ -408,7 +408,10 @@ public:
         return 1;
     }
 
-    i_collection(QString &js_config, i_comm_generic *comm,  QObject *parent = NULL):
+    i_collection(QString &js_config,
+                 QString &pt_storage,
+                 i_comm_generic *comm,
+                 QObject *parent = NULL):
         QObject(parent),
         path(js_config),
         par(__from_file()),
@@ -416,7 +419,7 @@ public:
         cam_simul(path),
         abort(false),
         iface(comm),
-        store(QDir::currentPath() + "/storage")
+        store(pt_storage)
     {
         //z vnejsu vyvolana akce
         QObject::connect(iface, SIGNAL(order(unsigned, QByteArray)), this, SLOT(on_order(unsigned, QByteArray)));

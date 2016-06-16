@@ -90,8 +90,10 @@ private:
     }	
 
 public:
-    t_inteva_app(t_comm_tcp_inteva &comm, QString &js_config) :
-        i_collection(js_config, &comm, this),
+    t_inteva_app(t_comm_tcp_inteva &comm,
+                 QString &js_config,
+                 QString &pt_storage) :
+        i_collection(js_config, pt_storage, &comm, this),
         th(path),
         l_fl(),
         r_fl()
