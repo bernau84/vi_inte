@@ -6,5 +6,50 @@
         "storage-path": {
                 "__info": "writable path for logs and result pictures",
                 "__def": ""
+        },
+        "threshold_method": {
+                "__info": "threshold type (BINARY, INV, +ADAPTIVE, +OTZU)",
+                "__def": "BINARY"
+        },
+        "threshold_positive": {
+                "__info": "threshold ",
+                "__def": 95,
+                "__min": 1,
+                "__max": 255
+        },
+        "threshold_binaryval": {
+                "__info": "threshold binary value",
+                "__def": 255,
+                "__min": 1,
+                "__max": 255
+        },
+        "contour_minimal": {
+                "__info": "valid countour area",
+                "__def": 100,
+                "__min": 1
+        },
+        "contour_sel": {
+                "__info": "selection rule (BIGGEST, ALL)",
+                "__def": "ALL"
+        },
+        "toler-zone": {
+                "__info": "width of toleration zone in pix",
+                "__def": 250
+        },
+        "toler-gap": {
+                "__info": "maximal distance between rubber ends in pix",
+                "__def": 50
+        },
+        "toler-offset": {
+                "__info": "x shift of central line of toleration zone in pix",
+                "__def": 0
+        },
+        "plane-cam-distance-mm": {
+                "__info": "distance between camera and measured surface mm",
+                "__def": 200
+        },
+        "focal-length-mm": {
+                "__info": "lenses f in mm",
+                "__def": 16
         }
  }

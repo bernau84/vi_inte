@@ -71,7 +71,8 @@ HEADERS += \
     t_inteva_app.h \
     i_collection.h \
     cinterface/t_comm_parser_binary_ex.h \
-    t_inteva_specification.h
+    t_inteva_specification.h \
+    processing/t_vi_proc_fitline.h
 
 DEFINES += USE_USB
 #DEFINES += USE_GIGE

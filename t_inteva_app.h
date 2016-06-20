@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <stdio.h>
+#include <algorithm>
 #include "i_collection.h"
 #include "t_inteva_specification.h"
 
@@ -32,6 +33,16 @@ private:
 
     uint32_t meas_count;
 
+    //x ovy prusecik s horizontalou x == h
+    float x_crossing(cv::Vec4f &line, float h){
+
+//        "vx" << QString::number(line[0]);
+//        "vy" << QString::number(line[1]);
+//        "x0" << QString::number(line[2]);
+//        "y0" << QString::number(line[3]);
+        return line[2] + (h - line[3])*(line[0] / line[1]);
+    }
+
     //preproces - spusten pred snimanim obrazu
     void __init_measurement() {
 
@@ -43,8 +54,61 @@ private:
     //potprocess - zpracovani hodnot z analyz 
     void __eval_measurement() {
 
-        //TODO: vysetreni primky vuci tolerancnimu poli
-        //prepocet z pix na mm
+        meas_count++;
+
+        //vysetreni primky vuci tolerancnimu poli
+        int D = par["toler-zone"].get().toInt();
+        int G = par["toler-gap"].get().toInt();
+        int X = par["toler-offset"].get().toInt();
+
+        int me_d = r_fl.line[2] - l_fl.line[2];  //stredni vzdalenost primek
+        int up_d_r = x_crossing(r_fl.line, 0);
+        int up_d_l = x_crossing(l_fl.line, 0);  //horni vzdalenost
+        int dw_d_r = x_crossing(r_fl.line, info.h);
+        int dw_d_l = x_crossing(l_fl.line, info.h);  //spodni
+
+        int perc_lfit_up = up_d_l - (X - D/2);
+        int perc_lfit_dw = dw_d_l - (X - D/2);
+
+        int perc_rfit_up = up_d_r - (X + D/2);
+        int perc_rfit_dw = dw_d_r - (X + D/2);
+
+        //pokud jsou oba kraje uvnitr tolerance tak 100% jinak primka vycuhuje v pomeru min / max
+        perc_lfit = 100;
+        if((perc_lfit_up < 0) && (perc_lfit_dw < 0)) perc_lfit = 0;
+        else perc_lfit *= (min(perc_lfit_up, perc_lfit_dw) / (0.5 + max(perc_lfit_up, perc_lfit_dw)));  //0.5 prevence overflow
+
+        perc_rfit = 100;
+        if((perc_rfit_up < 0) && (perc_rfit_dw < 0)) perc_rfit = 0;
+        else perc_rfit *= (min(perc_rfit_up, perc_rfit_dw) / (0.5 + max(perc_rfit_up, perc_rfit_dw)));
+
+        mm_gap = (me_d + (up_d_r - up_d_l) + (dw_d_r - dw_d_l)) / 3;
+
+        if(perc_rfit < 100){
+
+            error_mask &= ~VI_ERR_OK;
+            error_mask |= VI_ERR_MEAS1;
+        }
+
+        if(perc_lfit < 100){
+
+            error_mask &= ~VI_ERR_OK;
+            error_mask |= VI_ERR_MEAS2;
+        }
+
+        //prepocet z pix na mm - provadime jem pokud mame zakladni kalibraci
+        if(!par.ask("plane-cam-distance-mm") || !par.ask("focal-length-mm"))
+            return;
+
+        mm_gap *= par["plane-cam-distance-mm"].get().toInt();
+        mm_gap /= par["focal-length-mm"].get().toInt(); //to je stale v pix
+        mm_gap *= 2.2e-6; //rozliseni kamery - v mm/pix; vysledek v mm
+
+        if(mm_gap > G){
+
+            error_mask &= ~VI_ERR_OK;
+            error_mask |= VI_ERR_MEAS3;
+        }
     }
 
     //vlastni mereni - pravdepodoben vyuzitim i_proc_stage retezce
@@ -95,18 +159,24 @@ public:
                  QString &pt_storage) :
         i_collection(js_config, pt_storage, &comm, this),
         th(path),
-        l_fl(),
-        r_fl()
+        l_fl(path),
+        r_fl(path)
     {
         //zretezeni analyz - detekce linek oboji je napojena na 
         QObject::connect(&th, SIGNAL(next(int, void *)), &l_fl, SLOT(proc(int, void *)));
         QObject::connect(&th, SIGNAL(next(int, void *)), &r_fl, SLOT(proc(int, void *)));
 
-        QVariant left_v = 0;
-        l_fl.config(QString("search_from"), &left_v);
+        //specialni nastaveni pro aproximace primek
+        QString pname = "search-from";
+        QVariant pval;
 
-        QVariant rigth_v = 0;
-        r_fl.config(QString("search_from"), &rigth_v);
+        pval = 0; l_fl.config(pname, &pval);
+        pval = 2; r_fl.config(pname, &pval);
+
+        pname = "fitline-offs-left";
+        pval = 300; l_fl.config(pname, &pval);
+        pname = "fitline-offs-right";
+        pval = 300; r_fl.config(pname, &pval);
 
         //todo - set individual roi if necessery
     }
