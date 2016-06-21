@@ -7,9 +7,15 @@
                 "__info": "writable path for logs and result pictures",
                 "__def": ""
         },
+        "pic-format": {
+                "__info": "snapshot conversion rules - color/byte struct format",
+                "__def": "8bMONO",
+                "8b-mono": "8bMONO",
+                "32b-rgb": "32bRGB"
+        },
         "threshold_method": {
                 "__info": "threshold type (BINARY, INV, +ADAPTIVE, +OTZU)",
-                "__def": "BINARY"
+                "__def": "BINARY+OTZU"
         },
         "threshold_positive": {
                 "__info": "threshold ",

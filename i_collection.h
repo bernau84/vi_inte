@@ -252,15 +252,13 @@ public slots:
     virtual int on_trigger(){
 
         const int img_reserved = 3000 * 2000;
-        uint8_t *img = (uint8_t *) new uint8_t[img_reserved];
+        img = (uint8_t *) new uint8_t[img_reserved];
         if(!img){
 
             error_mask |= VI_ERR_CAM_MEMORY;
             log += QString("cam-error: alocation failed!");
             return 0;
         }
-
-        i_vi_camera_base::t_campic_info info;
 
         //acquisition
         int pisize = 0;

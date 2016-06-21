@@ -5,6 +5,8 @@
 
 #include <QtWidgets/QFileDialog>
 
+static const QString cam_offline_defconfigpath(":/js_camera_base.txt");
+
 class t_vi_camera_offline_file : public i_vi_camera_base
 {
 public:
@@ -43,11 +45,7 @@ public:
         return ret;
     }
 
-    t_vi_camera_offline_file()
-    {
-    }
-
-    t_vi_camera_offline_file(const QString &path):
+    t_vi_camera_offline_file(const QString &path = cam_offline_defconfigpath):
             i_vi_camera_base(path)
     {
     }

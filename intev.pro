@@ -26,11 +26,11 @@ INCLUDEPATH += "C:\\opencv\\build\\include"
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
 LIBS += -L"C:\\opencv\\build\\x86\\vc10\\lib" \
-    -lopencv_core2410 \
-    -lopencv_highgui2410 \
-    -lopencv_imgproc2410 \
-    -lopencv_features2d2410 \
-    -lopencv_calib3d2410
+    -lopencv_core2410d \
+    -lopencv_highgui2410d \
+    -lopencv_imgproc2410d \
+    -lopencv_features2d2410d \
+    -lopencv_calib3d2410d
 
 SUBDIRS += \
     cameras/cameras.pro \

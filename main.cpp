@@ -64,10 +64,10 @@ int main(int argc, char *argv[])
     QJsonDocument js_doc = QJsonDocument::fromJson(f_def.readAll());
     t_vi_setup config(js_doc.object());
     int port = config["tcp-server-port"].get().toInt();
-    QString storage = config["storage-path"].get().toString();
+    QString storage_path = config["storage-path"].get().toString();
 
     t_comm_tcp_inteva comm(port ? port : 9199);  //todo - read from config or postpone settings to t_collection
-    t_inteva_app worker(comm, storage, config_path);
+    t_inteva_app worker(comm, config_path, storage_path);
     worker.initialize();
 
     QObject::connect(&worker, SIGNAL(present_meas(QImage &,double,double)),  //vizualizace mereni

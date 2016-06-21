@@ -40,7 +40,7 @@ private slots:
     }
 
 signals:
-    void order(uint8_t ord, QByteArray par);
+    void order(unsigned ord, QByteArray par);
 
 public:
     virtual void on_read(QByteArray &dt) = 0;

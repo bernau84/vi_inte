@@ -29,7 +29,7 @@ public:
     {
         fancy_name = "fitline (" + fancy_name + ")";
         reload(0);
-        qDebug() << "Filine setup (1-4 roi), weight, direction:" <<
+        qDebug() << "Fitline setup (1-4 roi), weight, direction:" <<
                     ofs[0] << ofs[1] << ofs[2] << ofs[3] <<
                     weight << dir;
     }
@@ -152,7 +152,7 @@ public slots:
         dir = 0;
         if(par.ask("search-from", &tmp)){  //"0-left, 1-top, 2-right, 3-bottom",
 
-            qDebug() << "search-from " << tmp.get();
+            //qDebug() << "search-from " << tmp.get();
             dir = tmp.get().toInt();
         }
 

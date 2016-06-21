@@ -157,10 +157,10 @@ public:
     t_inteva_app(t_comm_tcp_inteva &comm,
                  QString &js_config,
                  QString &pt_storage) :
-        i_collection(js_config, pt_storage, &comm, this),
+        i_collection(js_config, pt_storage, &comm),
         th(path),
-        l_fl(path),
-        r_fl(path)
+        l_fl(),  //default konfigurace
+        r_fl()
     {
         //zretezeni analyz - detekce linek oboji je napojena na 
         QObject::connect(&th, SIGNAL(next(int, void *)), &l_fl, SLOT(proc(int, void *)));
