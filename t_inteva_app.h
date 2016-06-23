@@ -75,12 +75,16 @@ private:
 
         //pokud jsou oba kraje uvnitr tolerance tak 100% jinak primka vycuhuje v pomeru min / max
         perc_lfit = 100;
-        if((perc_lfit_up < 0) && (perc_lfit_dw < 0)) perc_lfit = 0;
-        else perc_lfit *= (min(perc_lfit_up, perc_lfit_dw) / (0.5 + max(perc_lfit_up, perc_lfit_dw)));  //0.5 prevence overflow
+        if((perc_lfit_up < 0) && (perc_lfit_dw < 0))
+            perc_lfit = 0;
+        else if((perc_lfit_up * perc_lfit_dw) < 0)
+            perc_lfit *= (min(perc_lfit_up, perc_lfit_dw) / (0.5 + max(perc_lfit_up, perc_lfit_dw)));  //0.5 prevence overflow
 
         perc_rfit = 100;
-        if((perc_rfit_up < 0) && (perc_rfit_dw < 0)) perc_rfit = 0;
-        else perc_rfit *= (min(perc_rfit_up, perc_rfit_dw) / (0.5 + max(perc_rfit_up, perc_rfit_dw)));
+        if((perc_rfit_up < 0) && (perc_rfit_dw < 0))
+            perc_rfit = 0;
+        else if((perc_rfit_up * perc_rfit_dw) < 0)
+            perc_rfit *= (min(perc_rfit_up, perc_rfit_dw) / (0.5 + max(perc_rfit_up, perc_rfit_dw)));
 
         mm_gap = (me_d + (up_d_r - up_d_l) + (dw_d_r - dw_d_l)) / 3;
 
@@ -116,6 +120,14 @@ private:
 
         cv::Mat src(info.h, info.w, CV_8U, img);
         th.proc(0, &src);
+
+        QVector<QRgb> colorTable;
+        for (int i = 0; i < 256; i++)
+            colorTable.push_back(QColor(i, i, i).rgb());
+
+        QImage meas(r_fl.loc.ptr(), r_fl.loc.cols, r_fl.loc.rows, QImage::Format_Indexed8);
+        meas.setColorTable(colorTable);
+        emit present_meas(meas, 0, 0);    //vizualizace preview kamery
     }
 
     //priprava datagramu pred odeslanim - uzitim private hodnot 

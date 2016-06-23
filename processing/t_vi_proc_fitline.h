@@ -181,9 +181,9 @@ private:
         Mat resized;
         resize(loc, resized, Size(loc.cols/2, loc.rows/2));
         loc = resized;
-        cv::namedWindow("Fitted-Line", CV_WINDOW_AUTOSIZE);
-        cv::imshow("Fitted-Line", resized);
-        cv::resizeWindow("Fitted-Line", resized.cols, resized.rows);
+//        cv::namedWindow("Fitted-Line", CV_WINDOW_AUTOSIZE);
+//        cv::imshow("Fitted-Line", resized);
+//        cv::resizeWindow("Fitted-Line", resized.cols, resized.rows);
 
         elapsed = etimer.elapsed();
         emit next(1, src); //pousti beze zmeny dal

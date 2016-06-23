@@ -48,7 +48,7 @@
         },
         "toler-offset": {
                 "__info": "x shift of central line of toleration zone in pix",
-                "__def": 0
+                "__def": 1296
         },
         "plane-cam-distance-mm": {
                 "__info": "distance between camera and measured surface mm",

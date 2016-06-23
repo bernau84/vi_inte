@@ -91,7 +91,7 @@ private:
         maxContRect = RotatedRect(Point2f(0, 0), Size2f(0, 0), 0.0);
 
         /// Show in a window
-        cv::imwrite("threshold-before.bmp", *src);
+        //cv::imwrite("threshold-before.bmp", *src);
 
         /// Hard limit - convert to binary
         if(!adaptive){

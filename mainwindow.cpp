@@ -19,6 +19,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::measured(QImage &im, double length, double diameter){
 
+//#ifdef QDEBUG
+    im.save("meas_original.jpg");
+//#endif //QDEBUG
     QSize m(ui->canvas->width(), ui->canvas->height());
     QImage rescaled = im.scaled(m);
 #ifdef QDEBUG
