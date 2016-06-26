@@ -9,7 +9,7 @@
 #include <QDir>
 
 #define RECORD_PATTERN_LOG  "log%1.txt"
-#define RECORD_PATTERN_IMG  "pic%1.bmp"
+#define RECORD_PATTERN_IMG  "pic%1_%2.bmp"
 #define RECORD_PATTERN_CNF  "log.cnf"
 
 class t_record_storage {
@@ -19,6 +19,7 @@ private:
     QSettings m_cnf;
     int m_history;
     int m_counter;
+    int m_image;
 
 public:
     t_record_storage(QString storage_path, int history = 100):
@@ -26,7 +27,7 @@ public:
         m_cnf(m_storage_path + "/" + RECORD_PATTERN_CNF, QSettings::IniFormat),
         m_history(history)
     {
-        m_counter = 0;
+        m_image = m_counter = 0;
 
         QDir dir(m_storage_path);
         if (!dir.exists()){
@@ -51,8 +52,16 @@ public:
         QString log_path = QString(RECORD_PATTERN_LOG).arg(m_counter);
         QFile::remove(m_storage_path + "/" + log_path);
 
-        QString img_path = QString(RECORD_PATTERN_IMG).arg(m_counter);
-        QFile::remove(m_storage_path + "/" + img_path);
+        for(int i_image = 0; i_image < 99; i_image++){
+
+            QString img_path = QString(RECORD_PATTERN_IMG).arg(m_counter).arg(i_image);
+            if(QFile::remove(m_storage_path + "/" + img_path) == false);
+                break;
+
+            qDebug() << img_path << "deleted!";
+        }
+
+        m_image = 0;
     }
 
     void append(QString &log){
@@ -76,7 +85,7 @@ public:
             vizual.setPixmap(QPixmap::fromImage(img));
             vizual.show();
 
-            QString img_path = QString(RECORD_PATTERN_IMG).arg(m_counter);
+            QString img_path = QString(RECORD_PATTERN_IMG).arg(m_counter).arg(m_image++);
             img.save(m_storage_path + "/" + img_path);
         }
     }

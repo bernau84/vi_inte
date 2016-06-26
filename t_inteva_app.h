@@ -2,6 +2,8 @@
 #define T_INTEVA_TESNENI
 
 #include <QObject>
+#include <QPainter>
+
 #include <stdio.h>
 #include <algorithm>
 #include "i_collection.h"
@@ -127,6 +129,22 @@ private:
 
         QImage meas(r_fl.loc.ptr(), r_fl.loc.cols, r_fl.loc.rows, QImage::Format_Indexed8);
         meas.setColorTable(colorTable);
+
+        //vysetreni primky vuci tolerancnimu poli
+        int D = par["toler-zone"].get().toInt() / 2;
+        int G = par["toler-gap"].get().toInt() / 2 ;
+        int X = par["toler-offset"].get().toInt() / 2;
+
+        meas = meas.convertToFormat(QImage::Format_RGB32);
+        QPainter toler;
+        toler.begin(&meas);
+        toler.setPen(QColor(255, 0, 0));
+        toler.drawLine(X - D/2, 0, X - D/2, info.h/2-1);
+        toler.setPen(QColor(0, 255, 0));
+        toler.drawLine(X + D/2, 0, X + D/2, info.h/2-1);
+        toler.end();
+
+        store.insert(meas);
         emit present_meas(meas, 0, 0);    //vizualizace preview kamery
     }
 

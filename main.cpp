@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     QString config_path = QDir::currentPath() + "/config.txt";
     QFile f_def(config_path);  //from resources
     f_def.open(QIODevice::ReadOnly | QIODevice::Text);
+
     QJsonDocument js_doc = QJsonDocument::fromJson(f_def.readAll());
     t_vi_setup config(js_doc.object());
     int port = config["tcp-server-port"].get().toInt();
