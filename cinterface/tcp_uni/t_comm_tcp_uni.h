@@ -42,8 +42,13 @@ public:
 
         if(dt.isEmpty() == false){
 
-            qDebug() << typeid(this).name() << "rx-str: " << QString(dt);
-            QString ordvals; for(int i=0; i < dt.size(); i++) ordvals += QString("0x%1,").arg(int(dt[i]), 2, 16, QChar('0'));
+            QString ordvals; for(int i=0; i < dt.size(); i++){
+
+                ordvals += "0x";
+                ordvals += QString::number((uint8_t)(dt[i]), 16);
+                if((i + 1) < dt.size()) ordvals += ",";
+            }
+
             qDebug() << typeid(this).name() << "rx-bin: " << ordvals;
         }
     }

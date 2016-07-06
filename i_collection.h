@@ -252,6 +252,8 @@ public slots:
     virtual int on_trigger(){
 
         const int img_reserved = 3000 * 2000;
+        if(img){ delete[] img; img = NULL; }
+
         img = (uint8_t *) new uint8_t[img_reserved];
         if(!img){
 
@@ -299,25 +301,6 @@ public slots:
             return 0;
         }
 
-        ptimer.start();
-
-        QVector<QRgb> colorTable;
-        for (int i = 0; i < 256; i++)
-            colorTable.push_back(QColor(i, i, i).rgb());
-
-        snapshot = QImage(img, info.w, info.h, QImage::Format_Indexed8);
-        snapshot.setColorTable(colorTable);
-
-        store.insert(snapshot);
-
-        emit present_preview(snapshot, 0, 0);    //vizualizace preview kamery
-
-        //process measurement or save new background
-        __proc_measurement();
-
-        if(img) delete[] img;
-
-        log += QString("analysis time %1ms\r\n").arg(ptimer.elapsed());
         return 1;
     }
 
@@ -329,22 +312,30 @@ public slots:
         //v ramci on_trigger se vola i __proc_measurement()
         int res = on_trigger();
         if(!res) res = on_trigger(); //opakujem 2x pokud se mereni nepovede
-        if(res){
 
-            __eval_measurement();  //prepocet na mm
+        if(res){
 
             QVector<QRgb> colorTable;
             for (int i = 0; i < 256; i++)
                 colorTable.push_back(QColor(i, i, i).rgb());
 
-//            //vizualizace mereni
-//            QImage output(th.loc.data, th.loc.cols, th.loc.rows, QImage::Format_Indexed8);
-//            output.setColorTable(colorTable);
-//            emit present_meas(output, mm_length, mm_diameter);
+            snapshot = QImage(img, info.w, info.h, QImage::Format_Indexed8);
+            snapshot.setColorTable(colorTable);
+
+            store.insert(snapshot);
+            emit present_preview(snapshot, 0, 0);    //vizualizace preview kamery
+
+            //process measurement
+            ptimer.start();
+            __proc_measurement();
+            log += QString("analysis time %1ms\r\n").arg(ptimer.elapsed());
+
+            //prepocet pixelu na mm nebo cokoli jineho
+            __eval_measurement();
         } else {
 
-//            QImage output(":/error-498-fix.gif");
-//            emit present_meas(output, mm_length, mm_diameter);
+            QImage output(":/error-498-fix.gif");
+            emit present_meas(output, -1, -1);
         }
 
         return res;
@@ -382,8 +373,8 @@ public slots:
 signals:
     void process_next(int p1, void *p2);  //pro vstupovani mezi jednotlive analyzy - see intercept() slot
 
-    void present_meas(QImage &im, double length, double diameter);  //vizualizace mereni
-    void present_preview(QImage &im, double length, double diameter);    //vizualizace preview kamery
+    void present_meas(QImage &im, double p1, double p2);  //vizualizace mereni
+    void present_preview(QImage &im, double p1, double p2);    //vizualizace preview kamery
 
 public slots:
 
@@ -421,10 +412,13 @@ public:
     {
         //z vnejsu vyvolana akce
         QObject::connect(iface, SIGNAL(order(unsigned, QByteArray)), this, SLOT(on_order(unsigned, QByteArray)));
+
+        //init
+        img = NULL;
     }
 
     virtual ~i_collection(){
-
+        if(img) delete[] img;
     }
 };
 

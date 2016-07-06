@@ -8,7 +8,7 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 1.1.6.1
+VERSION = 1.2.7.6
 
 SOURCES += main.cpp \
     mainwindow.cpp
@@ -26,11 +26,11 @@ INCLUDEPATH += "C:\\opencv\\build\\include"
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
 LIBS += -L"C:\\opencv\\build\\x86\\vc10\\lib" \
-    -lopencv_core2410d \
-    -lopencv_highgui2410d \
-    -lopencv_imgproc2410d \
-    -lopencv_features2d2410d \
-    -lopencv_calib3d2410d
+    -lopencv_core2410 \
+    -lopencv_highgui2410 \
+    -lopencv_imgproc2410 \
+    -lopencv_features2d2410 \
+    -lopencv_calib3d2410
 
 SUBDIRS += \
     cameras/cameras.pro \
@@ -60,12 +60,9 @@ HEADERS += \
     cinterface/cmd_line/t_comm_std_terminal.h \
     cinterface/tcp_uni/t_comm_tcp_uni.h \
     mainwindow.h \
-    processing/t_vi_proc_sub_background.h \
     processing/t_vi_proc_roi_colortransf.h \
-    processing/t_vi_proc_rectification.h \
     processing/t_vi_proc_statistic.h \
     processing/i_proc_stage.h \
-    processing/t_vi_proc_roll_approx.h \
     processing/t_vi_proc_threshold_cont.h \
     cameras/basler/t_vi_camera_basler_gige.h \
     t_inteva_app.h \

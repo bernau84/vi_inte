@@ -63,17 +63,22 @@ private:
         int G = par["toler-gap"].get().toInt();
         int X = par["toler-offset"].get().toInt();
 
+        log += QString("meas: settings - zone = %1, x-shift = %2, gap = %3").arg(D).arg(X).arg(G);
+
         int me_d = r_fl.line[2] - l_fl.line[2];  //stredni vzdalenost primek
         int up_d_r = x_crossing(r_fl.line, 0);
         int up_d_l = x_crossing(l_fl.line, 0);  //horni vzdalenost
         int dw_d_r = x_crossing(r_fl.line, info.h);
         int dw_d_l = x_crossing(l_fl.line, info.h);  //spodni
 
+        log += QString("meas: left line profile top %1, bottom %2").arg(up_d_l).arg(dw_d_l);
+        log += QString("meas: right line profile top %1, bottom %2").arg(up_d_r).arg(dw_d_r);
+
         int perc_lfit_up = up_d_l - (X - D/2);
         int perc_lfit_dw = dw_d_l - (X - D/2);
 
-        int perc_rfit_up = up_d_r - (X + D/2);
-        int perc_rfit_dw = dw_d_r - (X + D/2);
+        int perc_rfit_up = (X + D/2) - up_d_r;
+        int perc_rfit_dw = (X + D/2) - dw_d_r;
 
         //pokud jsou oba kraje uvnitr tolerance tak 100% jinak primka vycuhuje v pomeru min / max
         perc_lfit = 100;
@@ -90,38 +95,28 @@ private:
 
         mm_gap = (me_d + (up_d_r - up_d_l) + (dw_d_r - dw_d_l)) / 3;
 
+        if(mm_gap > G){
+
+            error_mask &= ~VI_ERR_OK;
+            error_mask |= VI_ERR_MEAS3;
+            log += QString("meas: VI_ERR_MEAS3(%1) - %2 pix gap over %3 pix limit\r\n").arg(VI_ERR_MEAS3, 0, 16).arg(mm_gap).arg(G);
+        }
+
         if(perc_rfit < 100){
 
             error_mask &= ~VI_ERR_OK;
             error_mask |= VI_ERR_MEAS1;
+            log += QString("meas: VI_ERR_MEAS1(%1) - only %2%% fit inside right limit\r\n").arg(VI_ERR_MEAS1, 0, 16).arg(perc_rfit);
         }
 
         if(perc_lfit < 100){
 
             error_mask &= ~VI_ERR_OK;
             error_mask |= VI_ERR_MEAS2;
+            log += QString("meas: VI_ERR_MEAS2(%1) - only %2%% fit inside left limit\r\n").arg(VI_ERR_MEAS2, 0, 16).arg(perc_lfit);
         }
 
-        //prepocet z pix na mm - provadime jem pokud mame zakladni kalibraci
-        if(!par.ask("plane-cam-distance-mm") || !par.ask("focal-length-mm"))
-            return;
-
-        mm_gap *= par["plane-cam-distance-mm"].get().toInt();
-        mm_gap /= par["focal-length-mm"].get().toInt(); //to je stale v pix
-        mm_gap *= 2.2e-6; //rozliseni kamery - v mm/pix; vysledek v mm
-
-        if(mm_gap > G){
-
-            error_mask &= ~VI_ERR_OK;
-            error_mask |= VI_ERR_MEAS3;
-        }
-    }
-
-    //vlastni mereni - pravdepodoben vyuzitim i_proc_stage retezce
-    void __proc_measurement() {
-
-        cv::Mat src(info.h, info.w, CV_8U, img);
-        th.proc(0, &src);
+        log += QString("meas: results - left %1%%, right %2%%, gap %3 pix").arg(perc_lfit).arg(perc_rfit).arg(mm_gap);
 
         QVector<QRgb> colorTable;
         for (int i = 0; i < 256; i++)
@@ -130,22 +125,39 @@ private:
         QImage meas(r_fl.loc.ptr(), r_fl.loc.cols, r_fl.loc.rows, QImage::Format_Indexed8);
         meas.setColorTable(colorTable);
 
-        //vysetreni primky vuci tolerancnimu poli
-        int D = par["toler-zone"].get().toInt() / 2;
-        int G = par["toler-gap"].get().toInt() / 2 ;
-        int X = par["toler-offset"].get().toInt() / 2;
-
-        meas = meas.convertToFormat(QImage::Format_RGB32);
+        meas = meas.convertToFormat(QImage::Format_ARGB32);
         QPainter toler;
         toler.begin(&meas);
         toler.setPen(QColor(255, 0, 0));
-        toler.drawLine(X - D/2, 0, X - D/2, info.h/2-1);
-        toler.setPen(QColor(0, 255, 0));
-        toler.drawLine(X + D/2, 0, X + D/2, info.h/2-1);
+        toler.setBrush(QBrush(QColor(255, 0, 0, 64)));
+        toler.drawRect(QRect((X - D/2)/2, 1, D/2, info.h/2-1));
         toler.end();
 
+        QEventLoop loop;  //process pottential abort
+        loop.processEvents();
+
         store.insert(meas);
-        emit present_meas(meas, 0, 0);    //vizualizace preview kamery
+        emit present_meas(meas, perc_lfit, perc_rfit);    //vizualizace preview kamery
+
+        //prepocet z pix na mm - provadime jem pokud mame zakladni kalibraci
+        if(!par.ask("plane-cam-distance-mm") || !par.ask("focal-length-mm"))
+            return;
+
+        int f = par["focal-length-mm"].get().toInt();
+        int d = par["plane-cam-distance-mm"].get().toInt();
+
+        mm_gap *= d;
+        mm_gap /= f; //to je stale v pix
+        mm_gap *= 2.2e-3; //rozliseni kamery - v mm/pix; vysledek v mm
+
+        log += QString("meas: gap %1 mm (f = %2, d = %3)").arg(mm_gap).arg(f).arg(d);
+    }
+
+    //vlastni mereni - pravdepodoben vyuzitim i_proc_stage retezce
+    void __proc_measurement() {
+
+        cv::Mat src(info.h, info.w, CV_8U, img);
+        th.proc(0, &src);
     }
 
     //priprava datagramu pred odeslanim - uzitim private hodnot 
@@ -207,6 +219,8 @@ public:
         pval = 300; l_fl.config(pname, &pval);
         pname = "fitline-offs-right";
         pval = 300; r_fl.config(pname, &pval);
+
+        perc_lfit = perc_rfit = mm_gap = -1.0;
 
         //todo - set individual roi if necessery
     }

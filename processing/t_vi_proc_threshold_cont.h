@@ -117,7 +117,17 @@ private:
         int maxarea = 0, maxindex = 0;    ///
         RotatedRect crect;
         out = Mat::zeros(src->size(), CV_8UC1);
-        for(unsigned i = 0; i < contours.size(); i++){
+
+
+        unsigned n_cont = contours.size();
+        if(n_cont > 100){
+
+            qDebug() << "contour number" << n_cont;
+            //qDebug() << "limited to 100" << n_cont;
+            //n_cont = 100;
+        }
+
+        for(unsigned i = 0; i < n_cont; i++){
 
             int area = contourArea(contours[i]);
             if(area > min_contour_area){

@@ -55,7 +55,7 @@ public:
         for(int i_image = 0; i_image < 99; i_image++){
 
             QString img_path = QString(RECORD_PATTERN_IMG).arg(m_counter).arg(i_image);
-            if(QFile::remove(m_storage_path + "/" + img_path) == false);
+            if(QFile::remove(m_storage_path + "/" + img_path) == false)
                 break;
 
             qDebug() << img_path << "deleted!";

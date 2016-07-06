@@ -44,7 +44,7 @@
         },
         "toler-gap": {
                 "__info": "maximal distance between rubber ends in pix",
-                "__def": 50
+                "__def": 150
         },
         "toler-offset": {
                 "__info": "x shift of central line of toleration zone in pix",
