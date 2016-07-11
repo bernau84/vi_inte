@@ -104,8 +104,8 @@ private:
 
 //        /// Show in a window
 //        cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
-//        cv::imshow("Threshold", out);
-//        cv::resizeWindow("Threshold", out.cols, out.rows);
+//        cv::imshow("Threshold", loc);
+//        cv::resizeWindow("Threshold", loc.cols, loc.rows);
 
         /// Find contours
         vector<Vec4i> hierarchy;

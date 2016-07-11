@@ -63,7 +63,7 @@ private:
         int G = par["toler-gap"].get().toInt();
         int X = par["toler-offset"].get().toInt();
 
-        log += QString("meas: settings - zone = %1, x-shift = %2, gap = %3").arg(D).arg(X).arg(G);
+        log += QString("meas: settings - zone = %1, x-shift = %2, gap = %3\r\n").arg(D).arg(X).arg(G);
 
         int me_d = r_fl.line[2] - l_fl.line[2];  //stredni vzdalenost primek
         int up_d_r = x_crossing(r_fl.line, 0);
@@ -71,8 +71,8 @@ private:
         int dw_d_r = x_crossing(r_fl.line, info.h);
         int dw_d_l = x_crossing(l_fl.line, info.h);  //spodni
 
-        log += QString("meas: left line profile top %1, bottom %2").arg(up_d_l).arg(dw_d_l);
-        log += QString("meas: right line profile top %1, bottom %2").arg(up_d_r).arg(dw_d_r);
+        log += QString("meas: left line profile top %1, bottom %2\r\n").arg(up_d_l).arg(dw_d_l);
+        log += QString("meas: right line profile top %1, bottom %2\r\n").arg(up_d_r).arg(dw_d_r);
 
         int perc_lfit_up = up_d_l - (X - D/2);
         int perc_lfit_dw = dw_d_l - (X - D/2);
@@ -84,14 +84,22 @@ private:
         perc_lfit = 100;
         if((perc_lfit_up < 0) && (perc_lfit_dw < 0))
             perc_lfit = 0;
-        else if((perc_lfit_up * perc_lfit_dw) < 0)
-            perc_lfit *= (min(perc_lfit_up, perc_lfit_dw) / (0.5 + max(perc_lfit_up, perc_lfit_dw)));  //0.5 prevence overflow
+        else if((perc_lfit_up * perc_lfit_dw) < 0){
+
+            double hi = fabs(double(max(perc_lfit_up, perc_lfit_dw)));
+            double lo = fabs(double(min(perc_lfit_up, perc_lfit_dw)));
+            perc_lfit = 100 * (hi - lo) / (hi + 0.5);
+        }
 
         perc_rfit = 100;
         if((perc_rfit_up < 0) && (perc_rfit_dw < 0))
             perc_rfit = 0;
-        else if((perc_rfit_up * perc_rfit_dw) < 0)
-            perc_rfit *= (min(perc_rfit_up, perc_rfit_dw) / (0.5 + max(perc_rfit_up, perc_rfit_dw)));
+        else if((perc_rfit_up * perc_rfit_dw) < 0){
+
+            double hi = fabs(double(max(perc_rfit_up, perc_rfit_dw)));
+            double lo = fabs(double(min(perc_rfit_up, perc_rfit_dw)));
+            perc_rfit = 100 * (hi - lo) / (hi + 0.5);
+        }
 
         mm_gap = (me_d + (up_d_r - up_d_l) + (dw_d_r - dw_d_l)) / 3;
 
@@ -116,7 +124,7 @@ private:
             log += QString("meas: VI_ERR_MEAS2(%1) - only %2%% fit inside left limit\r\n").arg(VI_ERR_MEAS2, 0, 16).arg(perc_lfit);
         }
 
-        log += QString("meas: results - left %1%%, right %2%%, gap %3 pix").arg(perc_lfit).arg(perc_rfit).arg(mm_gap);
+        log += QString("meas: results - left %1%%, right %2%%, gap %3 pix\r\n").arg(perc_lfit).arg(perc_rfit).arg(mm_gap);
 
         QVector<QRgb> colorTable;
         for (int i = 0; i < 256; i++)
@@ -150,7 +158,7 @@ private:
         mm_gap /= f; //to je stale v pix
         mm_gap *= 2.2e-3; //rozliseni kamery - v mm/pix; vysledek v mm
 
-        log += QString("meas: gap %1 mm (f = %2, d = %3)").arg(mm_gap).arg(f).arg(d);
+        log += QString("meas: gap %1 mm (f = %2, d = %3)\r\n").arg(mm_gap).arg(f).arg(d);
     }
 
     //vlastni mereni - pravdepodoben vyuzitim i_proc_stage retezce
