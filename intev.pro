@@ -2,13 +2,13 @@ QT += core gui
 QT += widgets
 QT += network
 
-TARGET = intev
+TARGET = intev_1_4
 CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 1.2.7.6
+VERSION = 1.4.13.7
 
 SOURCES += main.cpp \
     mainwindow.cpp
@@ -20,12 +20,12 @@ LIBS += -L"c:\Program Files\Basler\pylon 4\pylon\lib\Win32"
 LIBS += -L"c:\Program Files\Basler\pylon 4\genicam\library\CPP\Lib\Win32_i86"
 
 
-INCLUDEPATH += "C:\\opencv\\build\\include"
+INCLUDEPATH += "c:\\opencv\\build\\include"
 
 #kvuli releasu jsou to nedebugove knihovny
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
-LIBS += -L"C:\\opencv\\build\\x86\\vc10\\lib" \
+LIBS += -L"c:\\opencv\\build\\x86\\vc10\\lib" \
     -lopencv_core2410d \
     -lopencv_highgui2410d \
     -lopencv_imgproc2410d \

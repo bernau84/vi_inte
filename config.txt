@@ -15,11 +15,11 @@
         },
         "threshold_method": {
                 "__info": "threshold type (BINARY, INV, +ADAPTIVE, +OTZU)",
-                "__def": "BINARY+OTZU"
+                "__def": "BINARY"
         },
         "threshold_positive": {
                 "__info": "threshold ",
-                "__def": 95,
+                "__def": 30,
                 "__min": 1,
                 "__max": 255
         },
@@ -40,7 +40,7 @@
         },
         "toler-zone": {
                 "__info": "width of toleration zone in pix",
-                "__def": 250
+                "__def": 1600
         },
         "toler-gap": {
                 "__info": "maximal distance between rubber ends in pix",
@@ -52,7 +52,7 @@
         },
         "plane-cam-distance-mm": {
                 "__info": "distance between camera and measured surface mm",
-                "__def": 200
+                "__def": 50
         },
         "focal-length-mm": {
                 "__info": "lenses f in mm",

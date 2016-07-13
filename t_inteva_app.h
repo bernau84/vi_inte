@@ -81,24 +81,28 @@ private:
         int perc_rfit_dw = (X + D/2) - dw_d_r;
 
         //pokud jsou oba kraje uvnitr tolerance tak 100% jinak primka vycuhuje v pomeru min / max
-        perc_lfit = 100;
-        if((perc_lfit_up < 0) && (perc_lfit_dw < 0))
-            perc_lfit = 0;
-        else if((perc_lfit_up * perc_lfit_dw) < 0){
+        perc_lfit = 0;
+        if((perc_lfit_up * perc_lfit_dw) < 0){
 
             double hi = fabs(double(max(perc_lfit_up, perc_lfit_dw)));
             double lo = fabs(double(min(perc_lfit_up, perc_lfit_dw)));
-            perc_lfit = 100 * (hi - lo) / (hi + 0.5);
+            perc_lfit = 100 * (hi / (hi + lo));
+        } else if((perc_lfit_up < D) && (perc_lfit_dw < D) &&
+                  (perc_lfit_up > 0) && (perc_lfit_dw > 0)){
+
+            perc_lfit = 100;
         }
 
-        perc_rfit = 100;
-        if((perc_rfit_up < 0) && (perc_rfit_dw < 0))
-            perc_rfit = 0;
-        else if((perc_rfit_up * perc_rfit_dw) < 0){
+        perc_rfit = 0;
+        if((perc_rfit_up * perc_rfit_dw) < 0){
 
             double hi = fabs(double(max(perc_rfit_up, perc_rfit_dw)));
             double lo = fabs(double(min(perc_rfit_up, perc_rfit_dw)));
-            perc_rfit = 100 * (hi - lo) / (hi + 0.5);
+            perc_rfit = 100 * (hi / (hi + lo));
+        } else if((perc_rfit_up < D) && (perc_rfit_dw < D) &&
+                  (perc_rfit_up > 0) && (perc_rfit_dw > 0)){
+
+            perc_rfit = 100;
         }
 
         mm_gap = (me_d + (up_d_r - up_d_l) + (dw_d_r - dw_d_l)) / 3;
@@ -173,7 +177,7 @@ private:
 
         uint32_t i_perc_lfit = 10 * perc_lfit;
         uint32_t i_perc_rfit = 10 * perc_rfit;
-        uint32_t i_mm_gap = 10 * mm_gap;
+        uint32_t i_um_gap = 1000 * mm_gap;
 
         //typedef struct {
         //  uint8_t sync[3];
@@ -188,7 +192,7 @@ private:
             sync_inveva_pattern[0], sync_inveva_pattern[1], sync_inveva_pattern[2],
             ord,
             error_mask,
-            i_perc_lfit, i_perc_rfit, i_mm_gap,
+            i_perc_lfit, i_perc_rfit, i_um_gap,
             meas_count
         };
 
@@ -225,7 +229,9 @@ public:
 
         pname = "fitline-offs-left";
         pval = 300; l_fl.config(pname, &pval);
+        pval = 300; r_fl.config(pname, &pval);
         pname = "fitline-offs-right";
+        pval = 300; l_fl.config(pname, &pval);
         pval = 300; r_fl.config(pname, &pval);
 
         perc_lfit = perc_rfit = mm_gap = -1.0;
