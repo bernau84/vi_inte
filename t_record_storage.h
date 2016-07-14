@@ -27,15 +27,22 @@ public:
         m_cnf(m_storage_path + "/" + RECORD_PATTERN_CNF, QSettings::IniFormat),
         m_history(history)
     {
+        qDebug() << "t_record_storage::t_record_storage()";
+
         m_image = m_counter = 0;
 
         QDir dir(m_storage_path);
         if (!dir.exists()){
+
+          qDebug() << "t_record_storage::t_record_storage(): mkdir" << m_storage_path;
           dir.mkdir(".");
         }
 
         m_counter = m_cnf.value("LAST", m_counter).toInt();
         m_history = m_cnf.value("HISTORY", m_history).toInt();
+
+        qDebug() << "t_record_storage::t_record_storage(): pop" << "LAST =" << m_counter;
+        qDebug() << "t_record_storage::t_record_storage(): pop" << "HISTORY =" << m_history;
     }
 
     ~t_record_storage()
@@ -43,14 +50,19 @@ public:
         m_cnf.setValue("LAST", m_counter);
         m_cnf.setValue("HISTORY", m_history);
         m_cnf.sync();
+
+        qDebug() << "t_record_storage::~t_record_storage(): push back" << "LAST =" << m_counter;
+        qDebug() << "t_record_storage::~t_record_storage(): push back" << "HISTORY =" << m_history;
     }
 
     void increment(){
 
         m_counter = (m_counter + 1) % m_history;
+        qDebug() << "t_record_storage::increment()" << m_counter;
 
         QString log_path = QString(RECORD_PATTERN_LOG).arg(m_counter);
-        QFile::remove(m_storage_path + "/" + log_path);
+        if(QFile::remove(m_storage_path + "/" + log_path))
+            qDebug() << "t_record_storage::increment():" << log_path << "deleted!";
 
         for(int i_image = 0; i_image < 99; i_image++){
 
@@ -58,7 +70,7 @@ public:
             if(QFile::remove(m_storage_path + "/" + img_path) == false)
                 break;
 
-            qDebug() << img_path << "deleted!";
+            qDebug() << "t_record_storage::increment():" << img_path << "deleted!";
         }
 
         m_image = 0;
@@ -67,7 +79,7 @@ public:
     void append(QString &log){
 
         QString stamp = QTime::currentTime().toString("hh:mm:ss.zzz");
-        qDebug() << stamp << "\r\n" << log;
+        qDebug() << "t_record_storage::append():" << stamp << "\r\n" << log;
 
         QFile log_file(m_storage_path + "/" + QString(RECORD_PATTERN_LOG).arg(m_counter));
         log_file.open(QIODevice::Append | QIODevice::Text);
@@ -79,6 +91,7 @@ public:
 
     void insert(QImage &img){
 
+        qDebug() << "t_record_storage::insert()";
         if(!img.isNull()){
 
             QLabel vizual;
@@ -87,11 +100,13 @@ public:
 
             QString img_path = QString(RECORD_PATTERN_IMG).arg(m_counter).arg(m_image++);
             img.save(m_storage_path + "/" + img_path);
+            qDebug() << "t_record_storage::insert():" << img_path;
         }
     }
 
     void add(QString &log, QImage &img){
 
+        qDebug() << "t_record_storage::add()";
         increment();
         append(log);
         insert(img);

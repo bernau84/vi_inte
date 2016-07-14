@@ -103,13 +103,19 @@ public:
 
             /*! out of high bound */
             if((i_max != QJsonObject::constEnd()) && (i_max.value().isDouble()))
-                if(val.toDouble() > i_max.value().toDouble())
+                if(val.toDouble() > i_max.value().toDouble()){
+
+                    qDebug() << "t_setup_entry::set:" << val.toDouble() << "hard over limit" << i_max.value().toDouble();
                     return QJsonObject::insert("__val", i_max.value()).value();
+                }
 
             /*! out of low bound */
             if((i_min != QJsonObject::constEnd()) && (i_min.value().isDouble()))
-                if(val.toDouble() < i_min.value().toDouble())
+                if(val.toDouble() < i_min.value().toDouble()){
+
+                    qDebug() << "t_setup_entry::set:" << val.toDouble() << "hard over limit" << i_min.value().toDouble();
                     return QJsonObject::insert("__val", i_min.value()).value();
+                }
 
             /*! in bound */
             if((i_max != QJsonObject::constEnd()) || (i_min != constEnd()))
@@ -121,11 +127,13 @@ public:
             return QJsonObject::insert("__val", val).value();
 
         /*! else enum value is assumed */
+        qDebug() << "t_setup_entry::set: no def - enum assumed";
         for(QJsonObject::const_iterator i = constBegin(); i != constEnd(); i++)
             if(i.value() == val)
                 return QJsonObject::insert("__val", val).value();
 
         /*! value outside emun - no change possible - return actual value */
+        qDebug() << "t_setup_entry::set:" << val.toString() << "not listed in enum -> unchanged!";
         return get();
     }
 
@@ -214,8 +222,11 @@ public:
     void replace(const QString &title, const t_setup_entry &attribute){
 
         QJsonObject::iterator ai = find(title);
-        if(ai == end())
+        if(ai == end()){
+
+            qDebug() << "t_vi_setup::replace: missing" << title << "-> return";
             return;
+        }
 
         /*! update all keys version */
         *ai = attribute;
@@ -227,8 +238,11 @@ public:
     bool ask(const QString &title, t_setup_entry *e = NULL){
 
         QJsonObject::iterator ai = find(title);
-        if(ai == end())
+        if(ai == end()){
+
+            qDebug() << "t_vi_setup::ask: missing" << title << "-> return empty";
             return false;
+        }
 
         if(e) *e = t_setup_entry(ai.value().toObject());
         return true;
@@ -258,6 +272,7 @@ public:
     t_vi_setup(QObject *parent = 0):
         QObject(parent), QJsonObject(){
 
+        qDebug() << "t_vi_setup::t_vi_setup(): enter";
     }
 
     /*! \brief create inicialized
@@ -265,6 +280,7 @@ public:
     explicit  t_vi_setup(const QJsonObject &def):
         QObject(0), QJsonObject(def){
 
+        qDebug() << "t_vi_setup::t_vi_setup(def): enter";
     }
 
     ~t_vi_setup(){

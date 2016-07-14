@@ -60,38 +60,45 @@ protected:
     //constructor helpers
     QJsonObject __from_file(){
 
+        qDebug() << "i_collection::__from_file(): enter";
+
         // default config
         QFile f_def(path);  //from resources
         if(f_def.open(QIODevice::ReadOnly | QIODevice::Text)){
 
             QByteArray f_data = f_def.read(64000);
+            qDebug() << "i_collection::__from_file(): bytes " << f_data.left(32).simplified() << "...";
 
             QJsonDocument js_doc = QJsonDocument::fromJson(f_data);
             if(!js_doc.isEmpty()){
 
-                //qDebug() << js_doc.toJson();
+                qDebug() << "i_collection::__from_file(): json " << js_doc.toJson().left(32).simplified() << "...";
                 return js_doc.object();
             }
         }
 
+        qDebug() << "i_collection::__from_file(): file not found!";
         return QJsonObject();
     }
 
     //constructor helpers
     bool __to_file(){
 
+        qDebug() << "i_collection::__to_file(): enter";
+
         // default config
         QFile f_def(path);  //from resources
         if(f_def.open(QIODevice::WriteOnly | QIODevice::Text)){
 
-            //if(!par.isEmpty()){
+            QJsonDocument js_doc(par);
+            QByteArray ba_doc = js_doc.toJson();
+            qDebug() << "i_collection::__to_file(): json " << ba_doc.left(32) << "...";
 
-                QJsonDocument js_doc(par);
-                f_def.write(js_doc.toJson());
-                return true;
-            //}
+            f_def.write(ba_doc);
+            return true;
         }
 
+        qDebug() << "i_collection::__from_file(): file open error!";
         return false;
     }
 
@@ -251,6 +258,8 @@ public slots:
     //volame zatim rucne
     virtual int on_trigger(){
 
+        qDebug() << "i_collection::on_trigger(): enter";
+
         const int img_reserved = 3000 * 2000;
         if(img){ delete[] img; img = NULL; }
 
@@ -258,6 +267,7 @@ public slots:
         if(!img){
 
             error_mask |= VI_ERR_CAM_MEMORY;
+            qDebug() << "i_collection::on_trigger():  alocation failed!";
             log += QString("cam-error: alocation failed!");
             return 0;
         }
@@ -268,9 +278,11 @@ public slots:
 
             if(cam_device.sta == i_vi_camera_base::CAMSTA_PREPARED){
 
+                qDebug() << "i_collection::on_trigger(): cam_device.snap";
                 pisize = cam_device.snap(img, img_reserved, &info);
             } else {
 
+                qDebug() << "i_collection::on_trigger(): cam_simul.snap";
                 error_mask |= VI_ERR_CAM_NOTFOUND;
                 pisize = cam_simul.snap(img, img_reserved, &info);
             }
@@ -278,6 +290,7 @@ public slots:
             if((rep >= 5) || abort){
 
                 error_mask |= VI_ERR_CAM_TIMEOUT;
+
                 switch(pisize){
 
                     case 0:     error_mask |= VI_ERR_CAM_SNAPERR;   break;
@@ -285,6 +298,7 @@ public slots:
                     case -102:  error_mask |= VI_ERR_CAM_EXCEPTION; break;
                 }
 
+                qDebug() << "i_collection::on_trigger(): snap error/timeout - error mask" << error_mask;
                 log += QString("cam-error: timeout / abort");
                 abort = false;
                 return 0;
@@ -297,16 +311,19 @@ public slots:
         if(info.w * info.h <= 0){
 
             error_mask |= VI_ERR_CAM_BADPICT;
+            qDebug() << "i_collection::on_trigger(): bad picture" << info.w << info.h;
             log += QString("cam-error: bad picture");
             return 0;
         }
 
+        qDebug() << "i_collection::on_trigger(): picture" << info.w << info.h;
         return 1;
     }
 
     //obsahuje snimani obrazu a analyzu
     virtual int on_meas(void){
 
+        qDebug() << "i_collection::on_meas(): enter";
         __init_measurement();
 
         //v ramci on_trigger se vola i __proc_measurement()
@@ -343,6 +360,8 @@ public slots:
 
     virtual int on_abort(){
 
+        qDebug() << "i_collection::on_abort(): enter";
+
         abort = true;
 
         /*! \todo - qloop a cekame na vyhodnoceni (smazani abortu) */
@@ -350,6 +369,8 @@ public slots:
     }
 
     virtual int on_ready(){
+
+        qDebug() << "i_collection::on_ready(): enter";
 
         error_mask = VI_ERR_OK;
         if(cam_device.sta != i_vi_camera_base::CAMSTA_PREPARED){
@@ -363,10 +384,13 @@ public slots:
 
     virtual int on_background(){
 
+        qDebug() << "i_collection::on_background(): enter";
         return 1;
     }
 
     virtual int on_calibration(){
+
+        qDebug() << "i_collection::on_calibration(): enter";
         return on_trigger();
     }
 
@@ -392,6 +416,7 @@ public:
 
     int initialize(){
 
+        qDebug() << "i_collection::initialize()";
         cam_device.init();
         cam_simul.init();
         return 1;
@@ -410,6 +435,9 @@ public:
         iface(comm),
         store(pt_storage)
     {
+
+        qDebug() << "i_collection::i_collection()";
+
         //z vnejsu vyvolana akce
         QObject::connect(iface, SIGNAL(order(unsigned, QByteArray)), this, SLOT(on_order(unsigned, QByteArray)));
 

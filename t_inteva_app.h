@@ -160,7 +160,7 @@ private:
 
         mm_gap *= d;
         mm_gap /= f; //to je stale v pix
-        mm_gap *= 2.2e-3; //rozliseni kamery - v mm/pix; vysledek v mm
+        mm_gap *= float(2.2e-3); //rozliseni kamery - v mm/pix; vysledek v mm
 
         log += QString("meas: gap %1 mm (f = %2, d = %3)\r\n").arg(mm_gap).arg(f).arg(d);
     }
@@ -216,6 +216,8 @@ public:
         l_fl(),  //default konfigurace
         r_fl()
     {
+        qDebug() << "t_inteva_app::t_inteva_app()";
+
         //zretezeni analyz - detekce linek oboji je napojena na 
         QObject::connect(&th, SIGNAL(next(int, void *)), &l_fl, SLOT(proc(int, void *)));
         QObject::connect(&th, SIGNAL(next(int, void *)), &r_fl, SLOT(proc(int, void *)));

@@ -36,11 +36,12 @@ int main(int argc, char *argv[])
         IF EXIST "%TEMP%\pylonLog.txt" Start "" explorer.exe /select,%TEMP%\pylonLog.txt
     */
 
+    /*
     QProcessEnvironment pe = QProcessEnvironment::systemEnvironment();
 
     QString genicam_key = "PYLON_GENICAM_VERSION";
     QString genicam_value = "V2_3";
-    qDebug() << "QProcessEnvironment Insert" << genicam_key << genicam_value;
+    qDebug() << "main():" << "QProcessEnvironment Insert" << genicam_key << genicam_value;
     pe.insert(genicam_key, genicam_value);
 
     QString log_config_key = "GENICAM_LOG_CONFIG_";
@@ -49,8 +50,9 @@ int main(int argc, char *argv[])
     QString log_config_value = pe.value("PYLON_ROOT");
     log_config_value += pe.value("\\..\\DebugLogging.properties");
 
-    qDebug() << "QProcessEnvironment Insert" << log_config_key << log_config_value;
+    qDebug() << "main():" << "QProcessEnvironment Insert" << log_config_key << log_config_value;
     pe.insert(log_config_key, log_config_value);
+    */
 
     QApplication a(argc, argv);
 
@@ -66,6 +68,9 @@ int main(int argc, char *argv[])
     t_vi_setup config(js_doc.object());
     int port = config["tcp-server-port"].get().toInt();
     QString storage_path = config["storage-path"].get().toString();
+
+    qDebug() << "main():" << "config-path" << config_path;
+    qDebug() << "main():" << "storage-path" << storage_path + "/" + RECORD_PATTERN_CNF;
 
     t_comm_tcp_inteva comm(port ? port : 9199);  //todo - read from config or postpone settings to t_collection
     t_inteva_app worker(comm, config_path, storage_path);

@@ -13,6 +13,9 @@ VERSION = 1.4.13.7
 SOURCES += main.cpp \
     mainwindow.cpp
 
+#runtime detekce naruseni stacku a neicializovanych promennych
+QMAKE_CXXFLAGS += /RTC1
+
 INCLUDEPATH += "c:\Program Files\Basler\pylon 4\pylon\include"
 INCLUDEPATH += "c:\Program Files\Basler\pylon 4\genicam\library\CPP\include"
 
