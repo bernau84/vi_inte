@@ -91,7 +91,7 @@ private:
         maxContRect = RotatedRect(Point2f(0, 0), Size2f(0, 0), 0.0);
 
         /// Show in a window
-        //cv::imwrite("threshold-before.bmp", *src);
+        cv::imwrite("threshold-before.bmp", *src);
 
         /// Hard limit - convert to binary
         if(!adaptive){
@@ -102,10 +102,10 @@ private:
             cv::adaptiveThreshold(*src, loc, max_thresh, ADAPTIVE_THRESH_GAUSSIAN_C, type, 3, 5);
         }
 
-//        /// Show in a window
-//        cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
-//        cv::imshow("Threshold", loc);
-//        cv::resizeWindow("Threshold", loc.cols, loc.rows);
+        /// Show in a window
+        cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
+        cv::imshow("Threshold", loc);
+        cv::resizeWindow("Threshold", loc.cols, loc.rows);
 
         /// Find contours
         vector<Vec4i> hierarchy;

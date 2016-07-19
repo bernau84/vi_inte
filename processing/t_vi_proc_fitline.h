@@ -145,7 +145,7 @@ public slots:
         if(par.ask("fitline-offs-bottom", &tmp))
             ofs[3] = tmp.get().toInt();
 
-        weight = 0;
+        weight = 1;
         if(par.ask("fitline-weight", &tmp)) //L1, L2, nebo nejakou jinou vahu
             weight = tmp.get().toInt();
 

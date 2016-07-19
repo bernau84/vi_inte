@@ -2,7 +2,7 @@ QT += core gui
 QT += widgets
 QT += network
 
-TARGET = intev_1_4
+TARGET = intev64_1_4
 CONFIG += console
 CONFIG -= app_bundle
 
@@ -16,24 +16,17 @@ SOURCES += main.cpp \
 #runtime detekce naruseni stacku a neicializovanych promennych
 QMAKE_CXXFLAGS += /RTC1
 
-INCLUDEPATH += "c:\Program Files\Basler\pylon 4\pylon\include"
-INCLUDEPATH += "c:\Program Files\Basler\pylon 4\genicam\library\CPP\include"
+INCLUDEPATH += "c:\Program Files\Basler\pylon 5\Development\include"
 
-LIBS += -L"c:\Program Files\Basler\pylon 4\pylon\lib\Win32"
-LIBS += -L"c:\Program Files\Basler\pylon 4\genicam\library\CPP\Lib\Win32_i86"
+LIBS += -L"c:\Program Files\Basler\pylon 5\Development\lib\x64"
 
-
-INCLUDEPATH += "c:\\opencv\\build\\include"
+INCLUDEPATH += "c:\opencv\opencv301\build\include"
 
 #kvuli releasu jsou to nedebugove knihovny
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
-LIBS += -L"c:\\opencv\\build\\x86\\vc10\\lib" \
-    -lopencv_core2410d \
-    -lopencv_highgui2410d \
-    -lopencv_imgproc2410d \
-    -lopencv_features2d2410d \
-    -lopencv_calib3d2410d
+LIBS += -L"c:\opencv\opencv301\build\x64\vc12\lib" \
+    -lopencv_world310d
 
 SUBDIRS += \
     cameras/cameras.pro \

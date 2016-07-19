@@ -17,29 +17,27 @@ SOURCES += main.cpp
 HEADERS  += \
     i_proc_stage.h \
     ../t_vi_setup.h \
-    t_vi_proc_sub_background.h \
     t_vi_proc_roi_colortransf.h \
-    t_vi_proc_rectification.h \
     t_vi_proc_statistic.h \
-    t_vi_proc_roll_approx.h \
     t_vi_proc_threshold_cont.h \
     t_vi_proc_fitline.h
 
-INCLUDEPATH += "C:\\opencv\\build\\include"
 
-LIBS += -L"C:\\opencv\\build\\x86\\vc10\\lib" \
-    -lopencv_core2410d \
-    -lopencv_highgui2410d \
-    -lopencv_imgproc2410d \
-    -lopencv_features2d2410d \
-    -lopencv_calib3d2410d
+INCLUDEPATH += "c:\opencv\opencv301\build\include"
 
-#LIBS += -L"C:\\opencv\\build\\x86\\vc10\\lib" \
-#    -lopencv_core2410 \
-#    -lopencv_highgui2410 \
-#    -lopencv_imgproc2410 \
-#    -lopencv_features2d2410 \
-#    -lopencv_calib3d2410
+#kvuli releasu jsou to nedebugove knihovny
+#mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
+#podezreni na chybu win R6034
+LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
+    -lopencv_world310d
+
+#INCLUDEPATH += "c:\opencv\opencv2413\build\include"
+#LIBS += -L"C:\\opencv\\opencv2413\\build\\x86\\vc10\\lib" \
+#    -lopencv_core2413d \
+#    -lopencv_highgui2413d \
+#    -lopencv_imgproc2413d \
+#    -lopencv_features2d2413d \
+#    -lopencv_calib3d2413d
 
 DISTFILES += \
     js_config_cylinder_approx.txt \

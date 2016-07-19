@@ -83,7 +83,7 @@ public:
                 case ECOMM_PARSER_MATCH_ORDNO_0:
 
                     std::vector<uint8_t> st_ord = parser->getlast();
-                    QByteArray qt_ord((const char *)st_ord.data(), st_ord.size());
+                    QByteArray qt_ord((const char *)st_ord.data(), (int)st_ord.size());
                     callback(ret, qt_ord);
                     emit order(ret, qt_ord);
                 break;

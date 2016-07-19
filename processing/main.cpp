@@ -10,8 +10,8 @@ using namespace std;
 
 #include "t_vi_proc_roi_colortransf.h"
 #include "t_vi_proc_threshold_cont.h"
-#include "t_vi_proc_roll_approx.h"
-#include "t_vi_proc_sub_background.h"
+//#include "t_vi_proc_roll_approx.h"
+//#include "t_vi_proc_sub_background.h"
 #include "t_vi_proc_fitline.h"
 
 int main(int argc, char *argv[])
@@ -35,22 +35,24 @@ int main(int argc, char *argv[])
     Mat src = imread("4_in_stinitko.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 
     t_vi_proc_threshold th("config.txt");
-    t_vi_proc_fitline fl1("config.txt");
-    t_vi_proc_fitline fl2("config.txt");
+    t_vi_proc_fitline l_fl("config.txt");
+    t_vi_proc_fitline r_fl("config.txt");
 
     QString pname = "search-from";
     QVariant pval;
 
-    pval = 0; fl1.config(pname, &pval);
-    pval = 2; fl2.config(pname, &pval);
+    pval = 0; l_fl.config(pname, &pval);
+    pval = 2; r_fl.config(pname, &pval);
 
     pname = "fitline-offs-left";
-    pval = 300; fl1.config(pname, &pval);
+    pval = 300; l_fl.config(pname, &pval);
+    pval = 300; r_fl.config(pname, &pval);
     pname = "fitline-offs-right";
-    pval = 300; fl2.config(pname, &pval);
+    pval = 300; l_fl.config(pname, &pval);
+    pval = 300; r_fl.config(pname, &pval);
 
-    QObject::connect(&th, SIGNAL(next(int, void *)), &fl1, SLOT(proc(int, void *)));
-    QObject::connect(&th, SIGNAL(next(int, void *)), &fl2, SLOT(proc(int, void *)));
+    QObject::connect(&th, SIGNAL(next(int, void *)), &l_fl, SLOT(proc(int, void *)));
+    QObject::connect(&th, SIGNAL(next(int, void *)), &r_fl, SLOT(proc(int, void *)));
 
     th.proc(0, &src);
 
