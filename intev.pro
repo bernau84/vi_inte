@@ -2,19 +2,19 @@ QT += core gui
 QT += widgets
 QT += network
 
-TARGET = intev64_1_4
-CONFIG += console
+TARGET = intev64_1_6
+#CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 1.4.13.7
+VERSION = 1.6.26.7
 
 SOURCES += main.cpp \
     mainwindow.cpp
 
 #runtime detekce naruseni stacku a neicializovanych promennych
-QMAKE_CXXFLAGS += /RTC1
+#QMAKE_CXXFLAGS += /RTC1
 
 INCLUDEPATH += "c:\Program Files\Basler\pylon 5\Development\include"
 
@@ -25,7 +25,7 @@ INCLUDEPATH += "c:\opencv\opencv301\build\include"
 #kvuli releasu jsou to nedebugove knihovny
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
-LIBS += -L"c:\opencv\opencv301\build\x64\vc12\lib" \
+LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
     -lopencv_world310d
 
 SUBDIRS += \
@@ -65,7 +65,8 @@ HEADERS += \
     i_collection.h \
     cinterface/t_comm_parser_binary_ex.h \
     t_inteva_specification.h \
-    processing/t_vi_proc_fitline.h
+    processing/t_vi_proc_fitline.h \
+    processing/t_vi_edge_cont.h
 
 DEFINES += USE_USB
 #DEFINES += USE_GIGE

@@ -34,9 +34,17 @@ public:
     t_vi_proc_threshold(const QString &path = proc_threshold_defconfigpath):
         i_proc_stage(path)
     {
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold()";
         fancy_name = "treshold-contours(" + fancy_name + ")";
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold" << fancy_name;
+
         reload(0);
-        qDebug() << "Threshold & contours setup:" << thresh << max_thresh << min_contour_area << type << adaptive;
+
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold setup-thresh" << thresh;
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold setup-max_thresh" << max_thresh;
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold setup-min_contour_area" <<  min_contour_area;
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold setup-type" << type;
+        qDebug() << "t_vi_proc_threshold::t_vi_proc_threshold setup-adaptive" << adaptive;
     }
 
 
@@ -84,48 +92,60 @@ public slots:
 private:
     int iproc(int p1, void *p2){
 
+        qDebug() << "t_vi_proc_threshold::iproc()";
+
         p1 = p1;
 
         Mat *src = (Mat *)p2;
 
         maxContRect = RotatedRect(Point2f(0, 0), Size2f(0, 0), 0.0);
 
+        loc.release();
+        out.release();
+
+        qDebug() << "t_vi_proc_threshold::iproc released previous";
+
         /// Show in a window
         cv::imwrite("threshold-before.bmp", *src);
+        qDebug() << "t_vi_proc_threshold::iproc imwrite threshold-before.bmp";
 
         /// Hard limit - convert to binary
         if(!adaptive){
             /// for otzu vraci skutecny prah
             double rthresh = cv::threshold(*src, loc, thresh, max_thresh, type);
-            qDebug() << "threshol given" << thresh << "and used" << rthresh;
+            qDebug() << "t_vi_proc_threshold::iproc threshol given" << thresh << "and used" << rthresh;
         } else {
             cv::adaptiveThreshold(*src, loc, max_thresh, ADAPTIVE_THRESH_GAUSSIAN_C, type, 3, 5);
+            qDebug() << "t_vi_proc_threshold::iproc adaptive-threshol";
         }
 
-        /// Show in a window
+        Mat pre;
+        Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+        cv::morphologyEx(loc, pre, MORPH_CLOSE, kernel);
+        qDebug() << "t_vi_proc_threshold::morphology-close";
+
+        loc = pre;
+
+        Mat resized;
+
+        resize(loc, resized, Size(), 0.5, 0.5);
         cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
-        cv::imshow("Threshold", loc);
-        cv::resizeWindow("Threshold", loc.cols, loc.rows);
+        cv::imshow("Threshold", resized);
+        cv::resizeWindow("Threshold", resized.cols, resized.rows);
 
         /// Find contours
         vector<Vec4i> hierarchy;
         findContours(loc, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-        loc = *src;
+        loc = src->clone();
 
         /// Draw contours
         int maxarea = 0, maxindex = 0;    ///
         RotatedRect crect;
         out = Mat::zeros(src->size(), CV_8UC1);
 
-
         unsigned n_cont = contours.size();
-        if(n_cont > 100){
-
-            qDebug() << "contour number" << n_cont;
-            //qDebug() << "limited to 100" << n_cont;
-            //n_cont = 100;
-        }
+        qDebug() << "t_vi_proc_threshold::iproc contour number" << n_cont;
 
         for(unsigned i = 0; i < n_cont; i++){
 
@@ -151,7 +171,6 @@ private:
         }
 
         /// Show in a window
-        Mat resized;
         resize(loc, resized, Size(), 0.5, 0.5);
         cv::namedWindow("Contoures all", CV_WINDOW_AUTOSIZE);
         cv::imshow("Contoures all", resized);
@@ -165,13 +184,17 @@ private:
         } else {
             //BIGGEST is assumed
             drawContours(out, contours, maxindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
+            qDebug() << "t_vi_proc_threshold::iproc contours drawn";
         }
 
-        if(maxContRect.center.x * maxContRect.center.y == 0)
-            return 0;  //zadny emit - koncime
+        if(maxContRect.center.x * maxContRect.center.y == 0){
 
-        qDebug() << "pre_rows" << QString::number(src->rows);
-        qDebug() << "pre_clms" << QString::number(src->cols);
+            qDebug() << "t_vi_proc_threshold::iproc error - zero maxContRect";
+            return 0;  //zadny emit - koncime
+        }
+
+        qDebug() << "t_vi_proc_threshold::iproc pre_rows" << QString::number(src->rows);
+        qDebug() << "t_vi_proc_threshold::iproc pre_clms" << QString::number(src->cols);
 
         // matrices we'll use
         Mat M, rotated, cropped;
@@ -187,16 +210,18 @@ private:
         // get the rotation matrix
         M = cv::getRotationMatrix2D(maxContRect.center,
                                     maxContRect.angle, 1.0);
+        qDebug() << "t_vi_proc_threshold::iproc getRotationMatrix";
 
         // perform the affine transformation
         cv::warpAffine(out, rotated, M, out.size(), INTER_NEAREST);
+        qDebug() << "t_vi_proc_threshold::iproc warpAffine";
 
         // crop the resulting image
-        cv::getRectSubPix(rotated, rect_size,
-                          maxContRect.center, cropped);
+        cv::getRectSubPix(rotated, rect_size, maxContRect.center, cropped);
+        qDebug() << "t_vi_proc_threshold::iproc getRectSubPix";
 
-        qDebug() << "cropped_rows" << QString::number(cropped.rows);
-        qDebug() << "cropped_clms" << QString::number(cropped.cols);
+        qDebug() << "t_vi_proc_threshold::iproc cropped_rows" << QString::number(cropped.rows);
+        qDebug() << "t_vi_proc_threshold::iproc cropped_clms" << QString::number(cropped.cols);
 
         out = cropped.clone();
 

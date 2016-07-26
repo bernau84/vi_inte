@@ -27,9 +27,12 @@ public:
     t_vi_proc_fitline(const QString &path = proc_fitline_defconfigpath):
         i_proc_stage(path)
     {
+        qDebug() << "t_vi_proc_fitline::t_vi_proc_fitline()";
         fancy_name = "fitline (" + fancy_name + ")";
+        qDebug() << "t_vi_proc_fitline::t_vi_proc_fitline" << fancy_name;
+
         reload(0);
-        qDebug() << "Fitline setup (1-4 roi), weight, direction:" <<
+        qDebug() << "t_vi_proc_fitline::t_vi_proc_fitline setup (1-4 roi), weight, direction:" <<
                     ofs[0] << ofs[1] << ofs[2] << ofs[3] <<
                     weight << dir;
     }
@@ -40,6 +43,8 @@ private:
 
     //puvodne prevzate z roll_approx
     Vec4f linear_approx(float *err = NULL){
+
+        qDebug() << "t_vi_proc_fitline::linear_approx()";
 
         vector<Point> locations; Vec4f line;   // output, locations of non-zero pixels; vx, vy, x0, y0
 
@@ -88,6 +93,8 @@ private:
             break;
         }
 
+        qDebug() << "t_vi_proc_fitline::linear_approx location size" << locations.size();
+
         for(unsigned i=0; i<locations.size(); i++){
 
             Point p(locations[i].x, locations[i].y);
@@ -95,10 +102,13 @@ private:
         }
 
 
-        if(locations.size())
-            cv::fitLine(locations, line, weight, 0, 0.01, 0.01);
+        if(locations.size()){
 
-        qDebug() << "line" <<
+            qDebug() << "t_vi_proc_fitline::linear_approx before fitLine";
+            cv::fitLine(locations, line, weight, 0, 0.01, 0.01);
+        }
+
+        qDebug() << "t_vi_proc_fitline::linear_approx line approx" <<
                     "vx" << QString::number(line[0]) <<
                     "vy" << QString::number(line[1]) <<
                     "x0" << QString::number(line[2]) <<
@@ -119,6 +129,7 @@ private:
             }
 
             *err = cumsum / locations.size();
+            qDebug() << "t_vi_proc_fitline::linear_approx error eval" << *err;
         }
 
         return line;
@@ -128,6 +139,7 @@ public slots:
 
     int reload(int p){
 
+        qDebug() << "t_vi_proc_fitline::reload()";
         p = p;
 
         ofs[0] = ofs[1] = ofs[2] = ofs[3] = 0;
@@ -162,6 +174,8 @@ public slots:
 private:
     int iproc(int p1, void *p2){
 
+        qDebug() << "t_vi_proc_fitline::iproc()";
+
         p1 = p1;
         src = (Mat *)p2;
 
@@ -180,6 +194,8 @@ private:
         //vizualizace
         Mat resized;
         resize(loc, resized, Size(loc.cols/2, loc.rows/2));
+        qDebug() << "t_vi_proc_fitline::visual resize by 2";
+
         loc = resized;
 //        cv::namedWindow("Fitted-Line", CV_WINDOW_AUTOSIZE);
 //        cv::imshow("Fitted-Line", resized);

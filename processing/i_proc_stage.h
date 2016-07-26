@@ -77,13 +77,13 @@ public:
 
         if(value){
 
-            qDebug() << "before" << par[name].printout();
+            //qDebug() << "before" << par[name].printout();
 
             QJsonValue jval_set = QJsonValue::fromVariant(*value);
             QJsonValue jval_get = e.set(jval_set);
             par.replace(name, e);  //put back!
 
-            qDebug() << "after" << par[name].printout();
+            //qDebug() << "after" << par[name].printout();
 
             reload(0);
 

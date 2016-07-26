@@ -10,6 +10,7 @@
 #include "t_inteva_specification.h"
 
 #include "processing/t_vi_proc_fitline.h"
+#include "processing/t_vi_proc_statistic.h"
 #include "processing/t_vi_proc_threshold_cont.h"
 
 #include <opencv2/core/core.hpp>
@@ -25,6 +26,7 @@ class t_inteva_app : public i_collection {
 
 private:
 
+    t_vi_proc_statistic st;
     t_vi_proc_fitline l_fl;
     t_vi_proc_fitline r_fl;
     t_vi_proc_threshold th;
@@ -48,6 +50,8 @@ private:
     //preproces - spusten pred snimanim obrazu
     void __init_measurement() {
 
+        qDebug() << "t_inteva_app::__init_measurement";
+
         perc_lfit = perc_rfit = 0;
         mm_gap = 0.0;
         meas_count = 0;
@@ -57,6 +61,7 @@ private:
     void __eval_measurement() {
 
         meas_count++;
+        qDebug() << "t_inteva_app::__eval_measurement" << meas_count;
 
         //vysetreni primky vuci tolerancnimu poli
         int D = par["toler-zone"].get().toInt();
@@ -147,6 +152,8 @@ private:
 
         QEventLoop loop;  //process pottential abort
         loop.processEvents();
+        loop.processEvents();
+        loop.processEvents();
 
         store.insert(meas);
         emit present_meas(meas, perc_lfit, perc_rfit);    //vizualizace preview kamery
@@ -168,12 +175,41 @@ private:
     //vlastni mereni - pravdepodoben vyuzitim i_proc_stage retezce
     void __proc_measurement() {
 
+        qDebug() << "t_inteva_app::__proc_measurement";
+
         cv::Mat src(info.h, info.w, CV_8U, img);
+        st.proc(0, &src);
+
+        float hist = 0.0;
+        int auto_th, max_th = par["threshold_positive"].get().toInt();
+        float auto_th_perc = par["threshold_hist_adapt_perc"].get().toDouble();
+
+        st.proc(t_vi_proc_statistic::t_vi_proc_statistic_ord::STATISTIC_HIST_BRIGHTNESS, &src);
+        qDebug() << "t_inteva_app::__proc_measurement histogram";
+
+        for(auto_th = 0; auto_th < max_th; auto_th++){
+
+            hist += st.out.at<float>(auto_th);
+            qDebug() << "t_inteva_app::__proc_measurement hist-cum-sum" << hist;
+            if((hist / (src.rows * src.cols)) > (auto_th_perc/100.0))
+                break;
+        }
+
+        QString pname;
+        QVariant pval;
+
+        pname = "threshold_positive";
+        pval = auto_th; th.config(pname, &pval);
+        qDebug() << "t_inteva_app::__proc_measurement threshold update to " << auto_th;
+
         th.proc(0, &src);
+        qDebug() << "t_inteva_app::__proc_measurement threshold+line-fit";
     }
 
     //priprava datagramu pred odeslanim - uzitim private hodnot 
     void __serialize_measurement_res(unsigned ord, QByteArray &to) {
+
+        qDebug() << "t_inteva_app::__serialize_measurement_res";
 
         uint32_t i_perc_lfit = 10 * perc_lfit;
         uint32_t i_perc_rfit = 10 * perc_rfit;
@@ -202,7 +238,8 @@ private:
     //rozklad datagramu do private hodnot 
     void __deserialize_measurement_res(unsigned ord, QByteArray &from) {
 
-        //todo: nic nepotrebujem asi jen vyhodnoceni chyby ridici strany
+        qDebug() << "t_inteva_app::__deserialize_measurement_res";
+
         ord = ord;
         from = from;
     }	
@@ -212,6 +249,7 @@ public:
                  QString &js_config,
                  QString &pt_storage) :
         i_collection(js_config, pt_storage, &comm),
+        st(),
         th(path),
         l_fl(),  //default konfigurace
         r_fl()

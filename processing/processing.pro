@@ -6,7 +6,7 @@
 
 QT       += core
 
-CONFIG   += console
+#CONFIG   += console
 CONFIG   -= app_bundle
 
 TARGET = processing
