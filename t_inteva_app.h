@@ -70,6 +70,7 @@ private:
 
         log += QString("meas: settings - zone = %1, x-shift = %2, gap = %3\r\n").arg(D).arg(X).arg(G);
 
+        int me_x = (r_fl.line[2] + l_fl.line[2]) / 2;
         int me_d = r_fl.line[2] - l_fl.line[2];  //stredni vzdalenost primek
         int up_d_r = x_crossing(r_fl.line, 0);
         int up_d_l = x_crossing(l_fl.line, 0);  //horni vzdalenost
@@ -144,13 +145,21 @@ private:
 
         meas = meas.convertToFormat(QImage::Format_ARGB32);
         QPainter toler;
+        QPen pen_red(QColor(255, 0, 0));
+        pen_red.setWidth(2);
+        QPen pen_blue(QColor(0, 0, 255));
+        pen_blue.setWidth(2);
+
         toler.begin(&meas);
-        toler.setPen(QColor(255, 0, 0));
-        toler.setBrush(QBrush(QColor(255, 0, 0, 64)));
-        toler.drawRect(QRect((X - D/2)/2, 1, D/2, info.h/2-1));
+        toler.setPen(pen_red);
+        toler.setBrush(QBrush(QColor(255, 0, 0, 32)));
+        toler.drawRect(QRect((X - D/2)/2, 5, D/2, info.h/2-5));  //lomeno 2 kvuli zmenseni r_fl.loc vuci puvodnimu meritku
+        toler.setPen(pen_blue);
+        toler.setBrush(QBrush(QColor(0, 0, 255, 32)));
+        toler.drawRect(QRect((me_x - G/2)/2, 5, G/2, info.h/2-5));
         toler.end();
 
-        QEventLoop loop;  //process pottential abort
+        QEventLoop loop;  //process drawings
         loop.processEvents();
         loop.processEvents();
         loop.processEvents();
