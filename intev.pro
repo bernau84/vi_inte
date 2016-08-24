@@ -3,12 +3,12 @@ QT += widgets
 QT += network
 
 TARGET = intev64_1_6
-#CONFIG += console
+CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 1.6.26.7
+VERSION = 1.6.24.8
 
 SOURCES += main.cpp \
     mainwindow.cpp
@@ -26,7 +26,7 @@ INCLUDEPATH += "c:\opencv\opencv301\build\include"
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
 LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
-    -lopencv_world310d
+    -lopencv_world310
 
 SUBDIRS += \
     cameras/cameras.pro \

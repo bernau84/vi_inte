@@ -113,7 +113,7 @@ private:
 
         mm_gap = (me_d + (up_d_r - up_d_l) + (dw_d_r - dw_d_l)) / 3;
 
-        if(mm_gap > G){
+        if(G && (mm_gap > G)){
 
             error_mask &= ~VI_ERR_OK;
             error_mask |= VI_ERR_MEAS3;
@@ -154,9 +154,12 @@ private:
         toler.setPen(pen_red);
         toler.setBrush(QBrush(QColor(255, 0, 0, 32)));
         toler.drawRect(QRect((X - D/2)/2, 5, D/2, info.h/2-5));  //lomeno 2 kvuli zmenseni r_fl.loc vuci puvodnimu meritku
-        toler.setPen(pen_blue);
-        toler.setBrush(QBrush(QColor(0, 0, 255, 32)));
-        toler.drawRect(QRect((me_x - G/2)/2, 5, G/2, info.h/2-5));
+        if(G){
+
+            toler.setPen(pen_blue);
+            toler.setBrush(QBrush(QColor(0, 0, 255, 32)));
+            toler.drawRect(QRect((me_x - G/2)/2, 5, G/2, info.h/2-5));
+        }
         toler.end();
 
         QEventLoop loop;  //process drawings
@@ -195,6 +198,16 @@ private:
 
         st.proc(t_vi_proc_statistic::t_vi_proc_statistic_ord::STATISTIC_HIST_BRIGHTNESS, &src);
         qDebug() << "t_inteva_app::__proc_measurement histogram";
+
+        //nejvic cerna musi byt porad maximalne polovina medianu
+        double min_hist, max_hist;
+        cv::minMaxLoc(st.out, &min_hist, &max_hist);
+        if(max_th > max_hist/2){
+
+            qDebug() << "t_inteva_app::__proc_measurement config max threshold" << max_th
+                     << "limited to median/2" << max_hist/2;
+            max_th = max_hist/2;
+        }
 
         for(auto_th = 0; auto_th < max_th; auto_th++){
 
