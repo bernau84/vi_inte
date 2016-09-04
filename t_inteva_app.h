@@ -199,15 +199,18 @@ private:
         st.proc(t_vi_proc_statistic::t_vi_proc_statistic_ord::STATISTIC_HIST_BRIGHTNESS, &src);
         qDebug() << "t_inteva_app::__proc_measurement histogram";
 
-        //nejvic cerna musi byt porad maximalne polovina medianu
-        double min_hist, max_hist;
-        cv::minMaxLoc(st.out, &min_hist, &max_hist);
-        if(max_th > max_hist/2){
+        //nejvic cerna byt vyse nez minimum - rekneme nekde mezi min a max
+//        double min_hist, max_hist;
+//        int min_hist_i, max_hist_i;
+//        cv::minMaxIdx(st.out, &min_hist, &max_hist, &min_hist_i, &max_hist_i);
+//        if((max_th < min_hist_i) || (max_th >= max_hist_i)){
 
-            qDebug() << "t_inteva_app::__proc_measurement config max threshold" << max_th
-                     << "limited to median/2" << max_hist/2;
-            max_th = max_hist/2;
-        }
+//            int n_max_th = (min_hist_i + max_hist_i)/2;
+//            qDebug() << "t_inteva_app::__proc_measurement auto config max threshold from" << max_th
+//                     << "to (max+min)/2" << n_max_th;
+
+//            max_th = n_max_th;
+//        }
 
         for(auto_th = 0; auto_th < max_th; auto_th++){
 

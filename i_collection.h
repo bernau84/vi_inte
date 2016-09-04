@@ -278,6 +278,10 @@ public slots:
 
             if(cam_device.sta == i_vi_camera_base::CAMSTA_PREPARED){
 
+                qDebug() << QString("i_collection::on_trigger(): cam_device.exposure - %1ms begin").arg(etimer.elapsed());
+                cam_device.exposure(1500*1000, i_vi_camera_base::CAMVAL_AUTO_TIMEOUT); //cas na autoexpozici
+                qDebug() << QString("i_collection::on_trigger(): cam_device.exposure - %1ms end").arg(etimer.elapsed());
+
                 qDebug() << "i_collection::on_trigger(): cam_device.snap";
                 pisize = cam_device.snap(img, img_reserved, &info);
             } else {

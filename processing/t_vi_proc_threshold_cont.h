@@ -16,10 +16,11 @@ static const QString proc_threshold_defconfigpath(":/js_config_threshold_cont.tx
 class t_vi_proc_threshold : public i_proc_stage
 {
 public:
-    RotatedRect maxContRect;  //expotni aby sem si mohl zkontrolovat vysledky
+    RotatedRect selContRect;  //expotni aby sem si mohl zkontrolovat vysledky
 
 private:
     vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
     Mat out;
     Mat loc;
 
@@ -36,20 +37,167 @@ private:
     int max_thresh;
     int min_contour_area;
 
-    double __count_light(Mat& img, Point2f *rect_points){
+    virtual double __count_light(Mat& img, Point2f *rect_points){
 
         double sum = 0;
         double total = 0;
 
-        for(Point2f i=rect_points[0];norm(i-rect_points[1])>1;i+=(rect_points[1]-i)/norm((rect_points[1]-i))){
+        for(Point2f i=rect_points[0]; norm(i-rect_points[1])>1; i+=(rect_points[1]-i)/norm((rect_points[1]-i))){
+
             Point2f destination = i+rect_points[2]-rect_points[1];
-            for(Point2f j=i;norm(j-destination)>1;j+=(destination-j)/norm((destination-j))){
-                sum += img.at<uchar>(j);
-                total += 1;
+            for(Point2f j=i; norm(j-destination)>1; j+=(destination-j)/norm((destination-j))){
+
+                if(j.x > 0 && j.x < (img.cols-1))
+                    if(j.y > 0 && j.y < (img.rows-1)){
+
+                        sum += img.at<uchar>(j);
+                        total += 1;
+                    }
             }
         }
 
         return sum/total;
+    }
+
+    virtual void __preproc_source(){
+
+        Mat pre;  //uzavreni kvuli omezeni poctu objektu
+        Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+
+        cv::morphologyEx(loc, pre, MORPH_CLOSE, kernel);
+        loc = pre;
+
+        cv::morphologyEx(loc, pre, MORPH_OPEN, kernel);
+        loc = pre;
+
+        qDebug() << "t_vi_proc_threshold::morphology-close";
+    }
+
+    virtual double __weight_contour(RotatedRect &crect){
+
+        double weight = 1.0;
+
+        //position weight
+        if(0){ //todo - do konfigurace
+            //k okrajum penalizujeme
+            weight += 0.25 * fabs(crect.center.x/loc.cols - 0.5);
+            weight -= 0.25 * fabs(crect.center.y/loc.rows - 0.5);
+        }
+
+        double w = crect.boundingRect().width;
+        double h = crect.boundingRect().height;
+
+        //orientation weight
+        if(1){
+
+            if(fabs(crect.angle) > 45){
+                //pokud je to pres 45 tak prohodime strany
+                        //a otocime o 90st
+//                if(crect.angle > 0) crect.angle -= 90;
+//                else crect.angle += 90;
+
+//                int tw = w, th = h;
+//                h = tw; w = th;
+            }
+
+            if(fabs(crect.angle) > 15)
+                weight = 0;
+        }
+
+        //shape weight
+        if(1){
+            //vybirame jen ty kde je vyska vetsi nez sirka
+
+            if(h > w) weight *= (h - w) / h;
+            else weight = 0.0;
+        }
+
+
+
+        return weight;
+    }
+
+    virtual void __select_contours(Mat *src){
+
+        int maxarea = 0, maxindex = 0;
+        int lightarea = 0, lightindex = 0;
+        int darkarea = 255, darkindex = 0;
+
+        selContRect.size.width = selContRect.size.height = 0;
+
+        ///++ Draw contours
+        unsigned n_cont = contours.size();
+        if(!n_cont)
+            return;
+
+        for(unsigned i = 0; i < n_cont; i++){
+
+            int area = contourArea(contours[i]);
+            if(area > min_contour_area){
+
+                RotatedRect crect = minAreaRect(Mat(contours[i]));
+                drawContours(loc, contours, i, Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point());
+                if(which_contours == ALL) drawContours(out, contours, i, Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point());
+
+                Point2f rect_points[4];
+                crect.points(rect_points);
+
+                for(int j = 0; j < 4; j++)
+                   line(loc, rect_points[j], rect_points[(j+1)%4], Scalar(128, 0, 0), 1, 8);
+
+                //vazeni?
+                double weight = __weight_contour(crect);
+                double light = __count_light(*src, rect_points);
+
+                qDebug() << QString("t_vi_proc_threshold::iproc count#%1 an=%2,w=%3,h=%4,br=%5,wg=%6").
+                            arg(i).
+                            arg(crect.angle).
+                            arg(crect.size.width).arg(crect.size.height).
+                            arg(light).
+                            arg(weight);
+
+                //ruzne sortovani z ktereho si pak vyberem tu pravou konturu
+                if(maxarea < area){
+
+                    maxarea = area;
+                    maxindex = i;
+                }
+
+                double wlight = light * weight;
+                if(lightarea < wlight){
+
+                    lightarea = wlight;
+                    lightindex = i;
+                }
+
+                wlight = (light * (1 - weight));
+                if(darkarea > wlight){
+
+                    darkarea = wlight;
+                    darkindex = i;
+                }
+            }
+        }
+
+        if(which_contours == ALL){
+
+            //TODO - selContRect = region of all contours
+        } else if(which_contours == BIGGEST) {
+
+            selContRect = minAreaRect(Mat(contours[maxindex]));
+            drawContours(out, contours, maxindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
+            qDebug() << "t_vi_proc_threshold::iproc biggest contour drawn";
+        } else if(which_contours == DARKEST){
+
+            selContRect = minAreaRect(Mat(contours[darkindex]));
+            drawContours(out, contours, darkindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
+            qDebug() << "t_vi_proc_threshold::iproc darkest contours drawn";
+        } else if(which_contours == BRIGHTEST){
+
+            selContRect = minAreaRect(Mat(contours[lightindex]));
+            drawContours(out, contours, lightindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
+            qDebug() << "t_vi_proc_threshold::iproc brightest contours drawn";
+        }
     }
 
 public:
@@ -104,13 +252,15 @@ public slots:
             adaptive = true;
         }
 
-        which_contours = ALL;
+
         t_setup_entry e;
+        which_contours = ALL;
         if(par.ask("contour_sel", &e)){
 
-            if(e.get().toString().contains("BIGGEST")) which_contours = BIGGEST;
-            else if(e.get().toString().contains("DARKEST")) which_contours = DARKEST;
-            else if(e.get().toString().contains("BRIGHTEST")) which_contours = BRIGHTEST;
+            QString cont_str = e.get().toString();
+            if(cont_str.contains("BIGGEST")) which_contours = BIGGEST;
+            else if(cont_str.contains("DARKEST")) which_contours = DARKEST;
+            else if(cont_str.contains("BRIGHTEST")) which_contours = BRIGHTEST;
         }
 
         return 1;
@@ -125,7 +275,7 @@ private:
 
         Mat *src = (Mat *)p2;
 
-        maxContRect = RotatedRect(Point2f(0, 0), Size2f(0, 0), 0.0);
+        selContRect = RotatedRect(Point2f(0, 0), Size2f(0, 0), 0.0);
 
         loc.release();
         out.release();
@@ -146,91 +296,37 @@ private:
             qDebug() << "t_vi_proc_threshold::iproc adaptive-threshol";
         }
 
-        Mat pre;  //uzavreni kvuli omezeni poctu objektu
-        Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
-        cv::morphologyEx(loc, pre, MORPH_CLOSE, kernel);
-        qDebug() << "t_vi_proc_threshold::morphology-close";
+        //reduce noise, etc.
+        __preproc_source();
 
-        loc = pre;
-
-        Mat resized;
-
-        resize(loc, resized, Size(), 0.5, 0.5);
+        Mat resized; resize(loc, resized, Size(), 0.5, 0.5);
         cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
         cv::imshow("Threshold", resized);
         cv::resizeWindow("Threshold", resized.cols, resized.rows);
 
         /// Find contours
-        vector<Vec4i> hierarchy;
         findContours(loc, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+        qDebug() << "t_vi_proc_threshold::iproc contour number" << contours.size();
 
+        //init
         loc = src->clone();
-
-        /// Draw contours
-        int maxarea = 0, maxindex = 0;
-        int lightarea = 0, lightindex = 0;
-        int darkarea = 0, darkindex = 0;
-
-        RotatedRect crect;
         out = Mat::zeros(src->size(), CV_8UC1);
 
-        unsigned n_cont = contours.size();
-        qDebug() << "t_vi_proc_threshold::iproc contour number" << n_cont;
-
-        for(unsigned i = 0; i < n_cont; i++){
-
-            int area = contourArea(contours[i]);
-            if(area > min_contour_area){
-
-                crect = minAreaRect(Mat(contours[i]));
-                drawContours(loc, contours, i, Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point());
-                if(which_contours = ALL) drawContours(out, contours, i, Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point());
-
-                Point2f rect_points[4];
-                crect.points(rect_points);
-                int light = __count_light(*src, rect_points);
-
-                qDebug() << QString("t_vi_proc_threshold::iproc countour%1 size=%2, aver-br=%3").arg(i).arg(area).arg(light);
-
-                for(int j = 0; j < 4; j++)
-                   line(loc, rect_points[j], rect_points[(j+1)%4], Scalar(128, 0, 0), 1, 8);
-
-                //vazeni?
-                double pos_weight = 1;
-
-                if(1){ //todo - do konfigurace
-                    //k okrajum penalizujeme
-                    pos_weight = 1 -
-                            0.25 * fabs(crect.center.x/loc.cols - 0.5) -
-                            0.25 * fabs(crect.center.y/loc.rows - 0.5);
-
-                    qDebug() << QString("t_vi_proc_threshold::iproc countour%1 [%2, %3] weight %4").arg(i).arg(crect.center.x).arg(crect.center.y).arg(pos_weight);
-                }
-
-                //ruzne sortovani z ktereho si pak vyberem tu pravou konturu
-                if(maxarea < (area * pos_weight)){
-
-                    maxarea = area; maxindex = i;
-                    maxContRect = crect;
-                }
-
-                if(lightarea < (light * pos_weight)){
-
-                    lightarea = light; lightindex = i;
-                }
-
-                if(darkarea > (light * pos_weight)){
-
-                    darkarea = light; darkindex = i;
-                }
-            }
-        }
+        //select valid contours
+        __select_contours(src);
 
         //nejvetsi objekt je nula - konec
-        if(maxContRect.center.x * maxContRect.center.y == 0){
+        if(selContRect.center.x * selContRect.center.y == 0){
 
             qDebug() << "t_vi_proc_threshold::iproc error - zero maxContRect";
             return 0;  //zadny emit - koncime
+        }
+
+        if(1){  //uz nepokracujeme
+
+            elapsed = etimer.elapsed();
+            emit next(1, &out);
+            return 1;
         }
 
         /// Show in a window
@@ -239,43 +335,23 @@ private:
         cv::imshow("Contoures all", resized);
         cv::resizeWindow("Contoures all", resized.cols, resized.rows);
 
-        if(which_contours == ALL){
-
-            elapsed = etimer.elapsed();
-            emit next(1, &out);
-            return 1;
-        } else if(which_contours == BIGGEST) {
-
-            //BIGGEST is assumed
-            drawContours(out, contours, maxindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
-            qDebug() << "t_vi_proc_threshold::iproc biggest contour drawn";
-        } else if(which_contours == DARKEST){
-
-            drawContours(out, contours, darkindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
-            qDebug() << "t_vi_proc_threshold::iproc darkest contours drawn";
-        } else if(which_contours == BRIGHTEST){
-
-            drawContours(out, contours, lightindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
-            qDebug() << "t_vi_proc_threshold::iproc brightest contours drawn";
-        }
-
         qDebug() << "t_vi_proc_threshold::iproc pre_rows" << QString::number(src->rows);
         qDebug() << "t_vi_proc_threshold::iproc pre_clms" << QString::number(src->cols);
 
         // matrices we'll use
         Mat M, rotated, cropped;
-        Size rect_size = maxContRect.size;
+        Size rect_size = selContRect.size;
 
         // thanks to http://felix.abecassis.me/2011/10/opencv-rotation-deskewing/
-        if (maxContRect.angle < -45.) {
+        if (selContRect.angle < -45.) {
 
-            maxContRect.angle += 90.0;
+            selContRect.angle += 90.0;
             swap(rect_size.width, rect_size.height);
         }
 
         // get the rotation matrix
-        M = cv::getRotationMatrix2D(maxContRect.center,
-                                    maxContRect.angle, 1.0);
+        M = cv::getRotationMatrix2D(selContRect.center,
+                                    selContRect.angle, 1.0);
         qDebug() << "t_vi_proc_threshold::iproc getRotationMatrix";
 
         // perform the affine transformation
@@ -283,7 +359,7 @@ private:
         qDebug() << "t_vi_proc_threshold::iproc warpAffine";
 
         // crop the resulting image
-        cv::getRectSubPix(rotated, rect_size, maxContRect.center, cropped);
+        cv::getRectSubPix(rotated, rect_size, selContRect.center, cropped);
         qDebug() << "t_vi_proc_threshold::iproc getRectSubPix";
 
         qDebug() << "t_vi_proc_threshold::iproc cropped_rows" << QString::number(cropped.rows);
