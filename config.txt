@@ -5,7 +5,7 @@
         },
         "storage-path": {
                 "__info": "writable path for logs and result pictures",
-                "__def": ""
+                "__def": "c:/Users/bernau/Projects/sandbox/storage/"
         },
         "pic-format": {
                 "__info": "snapshot conversion rules - color/byte struct format",
@@ -15,7 +15,7 @@
         },
         "threshold_method": {
                 "__info": "threshold type (BINARY, INV, +ADAPTIVE, +OTZU)",
-                "__def": "BINARY"
+                "__def": "INV"
         },
         "threshold_positive": {
                 "__info": "threshold ",
@@ -31,18 +31,18 @@
         },
         "threshold_hist_adapt_perc": {
                 "__info": "threshold of histogram percentile",
-                "__def": 0.2,
+                "__def": 5,
                 "__min": 0.0001,
                 "__max": 0.9999
         },
         "contour_minimal": {
                 "__info": "valid countour area",
-                "__def": 100,
+                "__def": 500,
                 "__min": 1
         },
         "contour_sel": {
-                "__info": "selection rule (BIGGEST, ALL)",
-                "__def": "ALL"
+                "__info": "selection rule (BIGGEST, ALL, DARKEST, BRIGHTEST)",
+                "__def": "DARKEST"
         },
         "toler-zone": {
                 "__info": "width of toleration zone in pix",
