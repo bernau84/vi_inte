@@ -90,15 +90,15 @@ private:
         //orientation weight
         if(1){
 
-            if(fabs(crect.angle) > 45){
-                //pokud je to pres 45 tak prohodime strany
-                        //a otocime o 90st
+//            if(fabs(crect.angle) > 45){
+//                //pokud je to pres 45 tak prohodime strany
+//                        //a otocime o 90st
 //                if(crect.angle > 0) crect.angle -= 90;
 //                else crect.angle += 90;
 
 //                int tw = w, th = h;
 //                h = tw; w = th;
-            }
+//            }
 
             if(fabs(crect.angle) > 15)
                 weight = 0;
@@ -198,6 +198,11 @@ private:
             drawContours(out, contours, lightindex, Scalar(255, 255, 255), 1, 8, hierarchy, 0, Point());
             qDebug() << "t_vi_proc_threshold::iproc brightest contours drawn";
         }
+
+        Point2f rect_points[4];
+        selContRect.points(rect_points);
+        for(int j = 0; j < 4; j++)
+           line(loc, rect_points[j], rect_points[(j+1)%4], Scalar(0, 0, 0), 3, 8);
     }
 
 public:
@@ -299,10 +304,10 @@ private:
         //reduce noise, etc.
         __preproc_source();
 
-        Mat resized; resize(loc, resized, Size(), 0.5, 0.5);
-        cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
-        cv::imshow("Threshold", resized);
-        cv::resizeWindow("Threshold", resized.cols, resized.rows);
+//        Mat resized; resize(loc, resized, Size(), 0.5, 0.5);
+//        cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
+//        cv::imshow("Threshold", resized);
+//        cv::resizeWindow("Threshold", resized.cols, resized.rows);
 
         /// Find contours
         findContours(loc, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
@@ -322,6 +327,12 @@ private:
             return 0;  //zadny emit - koncime
         }
 
+        /// Show in a window
+        Mat resized; resize(loc, resized, Size(), 0.5, 0.5);
+        cv::namedWindow("Contoures all", CV_WINDOW_AUTOSIZE);
+        cv::imshow("Contoures all", resized);
+        cv::resizeWindow("Contoures all", resized.cols, resized.rows);
+
         if(1){  //uz nepokracujeme
 
             elapsed = etimer.elapsed();
@@ -329,11 +340,6 @@ private:
             return 1;
         }
 
-        /// Show in a window
-        resize(loc, resized, Size(), 0.5, 0.5);
-        cv::namedWindow("Contoures all", CV_WINDOW_AUTOSIZE);
-        cv::imshow("Contoures all", resized);
-        cv::resizeWindow("Contoures all", resized.cols, resized.rows);
 
         qDebug() << "t_vi_proc_threshold::iproc pre_rows" << QString::number(src->rows);
         qDebug() << "t_vi_proc_threshold::iproc pre_clms" << QString::number(src->cols);

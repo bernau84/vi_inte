@@ -192,33 +192,33 @@ private:
         cv::Mat src(info.h, info.w, CV_8U, img);
         st.proc(0, &src);
 
-        float hist = 0.0;
-        int auto_th, max_th = par["threshold_positive"].get().toInt();
+        int auto_th; //, max_th = par["threshold_positive"].get().toInt();
         float auto_th_perc = par["threshold_hist_adapt_perc"].get().toDouble();
 
         st.proc(t_vi_proc_statistic::t_vi_proc_statistic_ord::STATISTIC_HIST_BRIGHTNESS, &src);
         qDebug() << "t_inteva_app::__proc_measurement histogram";
 
         //nejvic cerna byt vyse nez minimum - rekneme nekde mezi min a max
-//        double min_hist, max_hist;
-//        int min_hist_i, max_hist_i;
-//        cv::minMaxIdx(st.out, &min_hist, &max_hist, &min_hist_i, &max_hist_i);
-//        if((max_th < min_hist_i) || (max_th >= max_hist_i)){
+        double min_hist = 1e+10, max_hist = 0, hist;
+        int min_hist_i = 0, max_hist_i = 0;
+        //TODO - cv::minMaxIdx() nefunguje
 
-//            int n_max_th = (min_hist_i + max_hist_i)/2;
-//            qDebug() << "t_inteva_app::__proc_measurement auto config max threshold from" << max_th
-//                     << "to (max+min)/2" << n_max_th;
+        for(auto_th = 0; auto_th < 255; auto_th++){
 
-//            max_th = n_max_th;
-//        }
+           hist = st.out.at<float>(auto_th);
+           if(hist > max_hist){ max_hist = hist; max_hist_i = auto_th; }
+           if(hist < min_hist){ min_hist = hist; min_hist_i = auto_th; }
+        }
 
-        for(auto_th = 0; auto_th < max_th; auto_th++){
+        for(auto_th = max_hist_i; auto_th >= 0; auto_th--){
 
-            hist += st.out.at<float>(auto_th);
-            qDebug() << "t_inteva_app::__proc_measurement hist-cum-sum" << hist;
-            if((hist / (src.rows * src.cols)) > (auto_th_perc/100.0))
+            hist = st.out.at<float>(auto_th);
+            qDebug() << "t_inteva_app::__proc_measurement hist-to-max" << hist << max_hist;
+            if((hist / max_hist) < (auto_th_perc / 100.0))
                 break;
         }
+
+        auto_th += 1; //krok zpet kdyby uz za maximem nebylo nic
 
         QString pname;
         QVariant pval;
