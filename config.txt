@@ -18,8 +18,8 @@
                 "__def": "INV"
         },
         "threshold_positive": {
-                "__info": "threshold ",
-                "__def": 60,
+                "__info": "threshold fixed / default value",
+                "__def": 30,
                 "__min": 1,
                 "__max": 255
         },
@@ -30,8 +30,8 @@
                 "__max": 255
         },
         "threshold_hist_adapt_perc": {
-                "__info": "threshold of histogram percentile",
-                "__def": 5,
+                "__info": "threshold in percetage of maximum on histogram",
+                "__def": 10,
                 "__min": 0.0001,
                 "__max": 0.9999
         },

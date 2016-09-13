@@ -29,8 +29,8 @@ void MainWindow::measured(QImage &im, double p1, double p2){
 #endif //QDEBUG
     ui->canvas->setPixmap(QPixmap::fromImage(rescaled));
 
-    ui->lineEdit->setText(QString::number(p1));
-    ui->lineEdit_2->setText(QString::number(p2));
+    ui->lineEdit->setText(QString::number(p2));
+    ui->lineEdit_2->setText(QString::number(p1));
 }
 
 void MainWindow::preview(QImage &im, double p1, double p2){
@@ -39,6 +39,6 @@ void MainWindow::preview(QImage &im, double p1, double p2){
     QImage rescaled = im.scaled(m);
     ui->preview->setPixmap(QPixmap::fromImage(rescaled));
 
-    ui->lineEdit->setText(QString::number(p1));
-    ui->lineEdit_2->setText(QString::number(p2));
+    ui->lineEdit->setText(QString::number(p2));
+    ui->lineEdit_2->setText(QString::number(p1));
 }

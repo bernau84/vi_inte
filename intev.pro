@@ -2,13 +2,13 @@ QT += core gui
 QT += widgets
 QT += network
 
-TARGET = intev64_1_6
+TARGET = intev64_1_7
 CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 1.6.24.8
+VERSION = 1.7.14.9
 
 SOURCES += main.cpp \
     mainwindow.cpp
@@ -25,8 +25,19 @@ INCLUDEPATH += "c:\opencv\opencv301\build\include"
 #kvuli releasu jsou to nedebugove knihovny
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
+debug {
+
+message(debug-open-cv)
+LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
+    -lopencv_world310d
+}
+
+release {
+
+message(release-open-cv)
 LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
     -lopencv_world310
+}
 
 SUBDIRS += \
     cameras/cameras.pro \
