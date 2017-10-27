@@ -53,11 +53,13 @@ public:
 
     virtual void callback(int ord, QByteArray par){
 
-        ord = ord;  par = par;
-        qDebug() << "ord" << ord << "par" << par;
+        qDebug() << "i_comm_generic:callback ord" << ord << "par" << par;
     }
 
     e_commsta refresh(){
+
+        static unsigned i = 0;
+        if(i++ % 100) qDebug() << "i_comm_generic::refresh() heardbeat";
 
         QByteArray dt;
         on_read(dt);
