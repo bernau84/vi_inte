@@ -194,8 +194,8 @@ public:
                 if (ptrGrabResult->GrabSucceeded())
                 {
                     // Access the image data.
-                    cout << "basler-pic-x: " << ptrGrabResult->GetWidth() << endl;
-                    cout << "basler-pic-y: " << ptrGrabResult->GetHeight() << endl;
+                    qDebug() << "basler-pic-x: " << ptrGrabResult->GetWidth() << endl;
+                    qDebug() << "basler-pic-y: " << ptrGrabResult->GetHeight() << endl;
                     const uint8_t *pImageBuffer = (uint8_t *) ptrGrabResult->GetBuffer();
 
 #if defined PYLON_WIN_BUILD && defined xQT_DEBUG
@@ -229,7 +229,7 @@ public:
                 }
                 else
                 {
-                    cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
+                    qDebug() << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
                     return 0;
                 }
             }

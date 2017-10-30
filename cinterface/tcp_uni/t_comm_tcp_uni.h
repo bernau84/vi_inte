@@ -30,7 +30,7 @@ private slots:
 
         tcp = ser.nextPendingConnection();
         sta = COMMSTA_PREPARED;
-        qDebug() << "Connected!";
+        qDebug() << "t_comm_tcp::accept() Connected!";
     }
 
 public:
@@ -49,7 +49,7 @@ public:
                 if((i + 1) < dt.size()) ordvals += ",";
             }
 
-            qDebug() << typeid(this).name() << "rx-bin: " << ordvals;
+            qDebug() << "t_comm_tcp::on_read()" << typeid(this).name() << "rx-bin: " << ordvals;
         }
     }
 
@@ -76,7 +76,7 @@ public:
         if(false == ser.isListening()){
 
             ser.listen(QHostAddress::Any, port);
-            qDebug() << "Listen on " << port << "port";
+            qDebug() << "t_comm_tcp() Listen on " << port << "port";
 
             connect(&ser, SIGNAL(newConnection()), this, SLOT(accept()));
         }
@@ -104,12 +104,12 @@ public:
         if(tcp->waitForConnected(50000/*VI_COMM_TCPCLI_CONN_TMO*/)){
 
             sta = COMMSTA_PREPARED;
-            qDebug() << "Connected!";
+            qDebug() << "t_comm_tcp() Connected!";
         } else {
 
             tcp = NULL;
             sta = COMMSTA_ERROR;
-            qDebug() << "Connect timeout!";
+            qDebug() << "t_comm_tcp() Connect timeout!";
         }
     }
 

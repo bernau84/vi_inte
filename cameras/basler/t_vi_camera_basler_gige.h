@@ -210,14 +210,14 @@ public:
                 if (ptrGrabResult->GrabSucceeded())
                 {
                     // Access the image data.
-                    cout << "basler-pic-x: " << ptrGrabResult->GetWidth() << endl;
-                    cout << "basler-pic-y: " << ptrGrabResult->GetHeight() << endl;
-                    cout << "basler-pic-size: " << ptrGrabResult->GetImageSize() << endl;
-                    cout << "basler-pic-payload-size: " << ptrGrabResult->GetPayloadSize() << endl;
-                    cout << "basler-pic-format: " << ptrGrabResult->GetPixelType() << endl;
-                    cout << "basler-pic-offset: " << ptrGrabResult->GetOffsetX() << endl;
-                    cout << "basler-pic-padding: " << ptrGrabResult->GetPaddingX() << endl;
-                    cout << "basler-pic-chunk: " << ptrGrabResult->IsChunkDataAvailable() << endl;
+                    qDebug() << "basler-pic-x: " << ptrGrabResult->GetWidth() << endl;
+                    qDebug() << "basler-pic-y: " << ptrGrabResult->GetHeight() << endl;
+                    qDebug() << "basler-pic-size: " << ptrGrabResult->GetImageSize() << endl;
+                    qDebug() << "basler-pic-payload-size: " << ptrGrabResult->GetPayloadSize() << endl;
+                    qDebug() << "basler-pic-format: " << ptrGrabResult->GetPixelType() << endl;
+                    qDebug() << "basler-pic-offset: " << ptrGrabResult->GetOffsetX() << endl;
+                    qDebug() << "basler-pic-padding: " << ptrGrabResult->GetPaddingX() << endl;
+                    qDebug() << "basler-pic-chunk: " << ptrGrabResult->IsChunkDataAvailable() << endl;
 
                     switch(ptrGrabResult->GetPixelType()){
 
@@ -236,7 +236,7 @@ public:
                 }
                 else
                 {
-                    cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
+                    qDebug() << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
                     return 0;
                 }
             }

@@ -59,7 +59,10 @@ public:
     e_commsta refresh(){
 
         static unsigned i = 0;
-        if(i++ % 100) qDebug() << "i_comm_generic::refresh() heardbeat";
+        if(0 == (i++ % 100))
+        {
+            qDebug() << "i_comm_generic::refresh() heardbeat";
+        }
 
         QByteArray dt;
         on_read(dt);

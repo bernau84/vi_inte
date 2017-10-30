@@ -9,6 +9,22 @@
 #include "t_inteva_app.h"
 #include "t_inteva_specification.h"
 
+QFile f_debug;
+
+void m_debug_msg_handler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_UNUSED(type);
+    Q_UNUSED(context);
+
+    QString datetime = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+
+    f_debug.write("[", 1);
+    f_debug.write(datetime.toLocal8Bit().data(), datetime.length());
+    f_debug.write("] ", 2);
+    f_debug.write(msg.toLocal8Bit().data(), msg.size());
+    f_debug.write("\n", 1);
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -53,6 +69,12 @@ int main(int argc, char *argv[])
     qDebug() << "main():" << "QProcessEnvironment Insert" << log_config_key << log_config_value;
     pe.insert(log_config_key, log_config_value);
     */
+
+    // redirect terminal output
+    QString debug_path = QDir::currentPath() + "/debug.log";
+    f_debug.setFileName(debug_path);
+    f_debug.open(QIODevice::WriteOnly | QIODevice::Text);
+    qInstallMessageHandler(m_debug_msg_handler);
 
     QApplication a(argc, argv);
 
