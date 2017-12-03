@@ -8,7 +8,7 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-VERSION = 1.7.15.0
+VERSION = 1.7.15.4
 
 SOURCES += main.cpp \
     mainwindow.cpp
@@ -25,12 +25,12 @@ INCLUDEPATH += "c:\opencv\opencv301\build\include"
 #kvuli releasu jsou to nedebugove knihovny
 #mozna kvuli tomu release padal, mozna chybely nakopirovat do system32
 #podezreni na chybu win R6034
-debug {
+#debug {
 
-message(debug-open-cv)
-LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
-    -lopencv_world310d
-}
+#message(debug-open-cv)
+#LIBS += -L"c:\opencv\opencv301\build\x64\vc14\lib" \
+#    -lopencv_world310d
+#}
 
 release {
 

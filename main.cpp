@@ -2,6 +2,7 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 #include <QLabel>
+#include <QDateTime>
 
 #include <stdio.h>
 #include "mainwindow.h"
@@ -23,6 +24,7 @@ void m_debug_msg_handler(QtMsgType type, const QMessageLogContext &context, cons
     f_debug.write("] ", 2);
     f_debug.write(msg.toLocal8Bit().data(), msg.size());
     f_debug.write("\n", 1);
+    f_debug.flush();
 }
 
 int main(int argc, char *argv[])
@@ -71,7 +73,8 @@ int main(int argc, char *argv[])
     */
 
     // redirect terminal output
-    QString debug_path = QDir::currentPath() + "/debug.log";
+    QDateTime tmstamp = QDateTime::currentDateTime();
+    QString debug_path = QDir::currentPath() + "/debug" + tmstamp.toString("yyMMddhhmmss") + ".log";
     f_debug.setFileName(debug_path);
     f_debug.open(QIODevice::WriteOnly | QIODevice::Text);
     qInstallMessageHandler(m_debug_msg_handler);

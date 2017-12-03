@@ -305,9 +305,9 @@ private:
         __preproc_source();
 
 //        Mat resized; resize(loc, resized, Size(), 0.5, 0.5);
-//        cv::namedWindow("Threshold", CV_WINDOW_AUTOSIZE);
-//        cv::imshow("Threshold", resized);
-//        cv::resizeWindow("Threshold", resized.cols, resized.rows);
+//        cv::namedWindow("Threshold-preproc", CV_WINDOW_AUTOSIZE);
+//        cv::imshow("Threshold-preproc", resized);
+//        cv::resizeWindow("Threshold-preproc", resized.cols, resized.rows);
 
         /// Find contours
         findContours(loc, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
@@ -328,10 +328,10 @@ private:
         }
 
         /// Show in a window
-        Mat resized; resize(loc, resized, Size(), 0.5, 0.5);
+        Mat resized2; resize(loc, resized2, Size(), 0.5, 0.5);
         cv::namedWindow("Contoures all", CV_WINDOW_AUTOSIZE);
-        cv::imshow("Contoures all", resized);
-        cv::resizeWindow("Contoures all", resized.cols, resized.rows);
+        cv::imshow("Contoures all", resized2);
+        cv::resizeWindow("Contoures all", resized2.cols, resized2.rows);
 
         if(1){  //uz nepokracujeme
 
